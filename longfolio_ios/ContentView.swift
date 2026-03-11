@@ -1,11 +1,12 @@
 //
 //  ContentView.swift
-//  longfolio
+//  longfolio_ios
 //
 //  Created by Илья Бочков on 11.03.26.
 //
 
 import SwiftUI
+import SharedModels
 
 struct ContentView: View {
     var body: some View {

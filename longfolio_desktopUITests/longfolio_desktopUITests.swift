@@ -1,13 +1,13 @@
 //
-//  longfolioUITests.swift
-//  longfolioUITests
+//  longfolio_desktopUITests.swift
+//  longfolio_desktopUITests
 //
 //  Created by Илья Бочков on 11.03.26.
 //
 
 import XCTest
 
-final class longfolioUITests: XCTestCase {
+final class longfolio_desktopUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

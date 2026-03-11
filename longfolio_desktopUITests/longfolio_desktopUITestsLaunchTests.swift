@@ -1,13 +1,13 @@
 //
-//  longfolioUITestsLaunchTests.swift
-//  longfolioUITests
+//  longfolio_desktopUITestsLaunchTests.swift
+//  longfolio_desktopUITests
 //
 //  Created by Илья Бочков on 11.03.26.
 //
 
 import XCTest
 
-final class longfolioUITestsLaunchTests: XCTestCase {
+final class longfolio_desktopUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
