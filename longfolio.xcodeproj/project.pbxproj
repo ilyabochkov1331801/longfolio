@@ -47,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3408C6FE2F682643001E9B88 /* SharedWorkers */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SharedWorkers; sourceTree = "<group>"; };
 		7920C20A2F62014D005AB876 /* SharedModels */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SharedModels; sourceTree = "<group>"; };
 		7920C20B2F62014D005AB876 /* SharedNetwork */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SharedNetwork; sourceTree = "<group>"; };
 		79C81F902F61FE49002A0870 /* longfolio_desktop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = longfolio_desktop.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,6 +155,7 @@
 			children = (
 				7920C20A2F62014D005AB876 /* SharedModels */,
 				7920C20B2F62014D005AB876 /* SharedNetwork */,
+				3408C6FE2F682643001E9B88 /* SharedWorkers */,
 			);
 			path = Libraries;
 			sourceTree = "<group>";
