@@ -1,5 +1,5 @@
 //
-//  DividendTransaction.swift
+//  CashTransactionEntity.swift
 //  SharedModels
 //
 //  Created by Alena Nesterkina on 24.03.26.
@@ -7,10 +7,8 @@
 
 import Foundation
 
-public struct DividendTransaction {
+public struct CashTransaction {
     let id: String
     let date: Date
-    let asset: AssetTicker
     let amount: Amount
-    let portfolio: Portfolio?
 }

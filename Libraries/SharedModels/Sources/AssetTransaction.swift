@@ -11,8 +11,6 @@ public struct AssetTransaction {
     let id: String
     let date: Date
     let type: AssetTransactionType
-    let ticker: AssetTicker
     let quantity: Double
-    let amount: Double
-    let portfolio: Portfolio?
+    let amount: Amount
 }

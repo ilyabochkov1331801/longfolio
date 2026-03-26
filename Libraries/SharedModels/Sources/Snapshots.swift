@@ -11,7 +11,6 @@ public struct PositionSnapshot {
     let ticker: AssetTicker
     let quantity: Double
     let price: Amount
-    let portfolio: PortfolioSnapshot?
 }
 
 public struct PortfolioSnapshot {
@@ -19,5 +18,4 @@ public struct PortfolioSnapshot {
     let date: Date
     let name: String
     let cache: [Amount]
-    let portfolio: Portfolio?
 }

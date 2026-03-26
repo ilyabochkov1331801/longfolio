@@ -6,7 +6,7 @@
 //
 
 public struct Portfolio {
-    let id: String
+    let name: String
     let cashAmount: [Amount] // different currencies
     let assetsTransactions: [AssetTransaction]
     let cashTransactions: [CashTransaction]

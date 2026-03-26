@@ -9,5 +9,4 @@ public struct Position {
     let ticker: AssetTicker
     let quantity: Double
     let averageOpenPrice: Amount
-    let portfolio: Portfolio?
 }
