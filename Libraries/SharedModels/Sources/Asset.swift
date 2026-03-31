@@ -20,5 +20,4 @@ public struct AssetTicker {
 public struct AssetDayPrice {
     let date: Date
     let price: Amount
-    let asset: Asset
 }
