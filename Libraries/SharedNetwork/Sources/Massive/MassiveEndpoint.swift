@@ -8,14 +8,8 @@
 import Foundation
 import Alamofire
 
-public extension NetworkService {
-    func getTickers(tickerQuery: String) async throws -> MassiveTickersList {
-        try await execute(request: MassiveEndpoint.getTickers(tickerQuery: tickerQuery))
-    }
-}
-
 enum MassiveEndpoint: URLRequestConvertible {
-    case getTickers(tickerQuery: String)
+    case getDayPrice(ticker: String, date: String)
     
     func asURLRequest() throws -> URLRequest {
         let url = try Constants.endpoint.asURL()
@@ -38,16 +32,15 @@ enum MassiveEndpoint: URLRequestConvertible {
 private extension MassiveEndpoint {
     var method: HTTPMethod {
         switch self {
-        case .getTickers:
+        case .getDayPrice:
             return .get
         }
     }
     
     var parameters: Parameters? {
         switch self {
-        case let .getTickers(tickerQuery: tickerQuery):
+        case .getDayPrice:
             return [
-                "ticker": tickerQuery,
                 "apiKey": Constants.apiKey
             ]
         }
@@ -55,8 +48,8 @@ private extension MassiveEndpoint {
     
     var path: String {
         switch self {
-        case let .getTickers(tickerQuery: tickerQuery):
-            return "/v3/reference/tickers"
+        case let .getDayPrice(ticker, date):
+            return "/v1/open-close/\(ticker)/\(date)"
         }
     }
 }

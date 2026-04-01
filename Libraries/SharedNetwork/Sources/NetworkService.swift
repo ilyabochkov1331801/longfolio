@@ -6,9 +6,18 @@
 //
 
 import Alamofire
+import Foundation
 
-public final class NetworkService {
-    public init() { }
+public protocol NetworkService {
+    var decoder: DataDecoder { get }
+    
+    func execute<T: Decodable & Sendable>(request: URLRequestConvertible) async throws -> T
+}
+
+public protocol NetworkServiceTrait: NetworkService { }
+
+public extension NetworkServiceTrait {
+    var decoder: DataDecoder { JSONDecoder() }
     
     func execute<T: Decodable & Sendable>(request: URLRequestConvertible) async throws -> T {
         try await AF
@@ -17,7 +26,7 @@ public final class NetworkService {
                 print("CURL \($0)")
             }
             .validate()
-            .serializingDecodable()
+            .serializingDecodable(decoder: decoder)
             .value
     }
 }

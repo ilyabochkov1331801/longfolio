@@ -28,14 +28,22 @@ struct ContentView: View {
 
 @Observable
 final class ContentViewModel {
-    private let networkService = NetworkService()
+    private let massiveNetworkService = MassiveNetworkService()
+    private let eodhdNetworkService = EodhdNetworkService()
     
     func loadData() async {
         do {
-            let ticker = try await networkService.getTickers(tickerQuery: "SMCI")
-            print(ticker)
+            let assets = try await eodhdNetworkService.searchAssets(for: "4GLD")
+            guard let asset = assets.first else { return }
+            let prices = try await eodhdNetworkService.assetPrices(
+                for: asset.code,
+                exchange: asset.exchange,
+                fromDate: Date().addingTimeInterval(-3 * 24 * 60 * 60),
+                toDate: Date()
+            A)
+            print(prices)
         } catch {
-            
+            print(error.localizedDescription)
         }
     }
 }
