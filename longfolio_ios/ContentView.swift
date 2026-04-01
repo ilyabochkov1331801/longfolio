@@ -40,7 +40,7 @@ final class ContentViewModel {
                 exchange: asset.exchange,
                 fromDate: Date().addingTimeInterval(-3 * 24 * 60 * 60),
                 toDate: Date()
-            A)
+            )
             print(prices)
         } catch {
             print(error.localizedDescription)
