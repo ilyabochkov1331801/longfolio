@@ -11,6 +11,8 @@
 		7920C2072F61FFAD005AB876 /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = 7920C2062F61FFAD005AB876 /* SharedModels */; };
 		7920C20E2F620168005AB876 /* SharedNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = 7920C20D2F620168005AB876 /* SharedNetwork */; };
 		7920C2102F620171005AB876 /* SharedNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = 7920C20F2F620171005AB876 /* SharedNetwork */; };
+		79A4295B2F72FA3B00BB4ECF /* SharedWorkers in Frameworks */ = {isa = PBXBuildFile; productRef = 79A4295A2F72FA3B00BB4ECF /* SharedWorkers */; };
+		79A4295D2F72FA4300BB4ECF /* SharedWorkers in Frameworks */ = {isa = PBXBuildFile; productRef = 79A4295C2F72FA4300BB4ECF /* SharedWorkers */; };
 		79F617D22F6202BA002DE089 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 79F617D12F6202BA002DE089 /* Alamofire */; };
 		79F617D42F6202C1002DE089 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 79F617D32F6202C1002DE089 /* Alamofire */; };
 /* End PBXBuildFile section */
@@ -97,6 +99,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				79F617D22F6202BA002DE089 /* Alamofire in Frameworks */,
+				79A4295B2F72FA3B00BB4ECF /* SharedWorkers in Frameworks */,
 				7920C2102F620171005AB876 /* SharedNetwork in Frameworks */,
 				7920C2052F61FF97005AB876 /* SharedModels in Frameworks */,
 			);
@@ -121,6 +124,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				79F617D42F6202C1002DE089 /* Alamofire in Frameworks */,
+				79A4295D2F72FA4300BB4ECF /* SharedWorkers in Frameworks */,
 				7920C20E2F620168005AB876 /* SharedNetwork in Frameworks */,
 				7920C2072F61FFAD005AB876 /* SharedModels in Frameworks */,
 			);
@@ -211,6 +215,7 @@
 				7920C2042F61FF97005AB876 /* SharedModels */,
 				7920C20F2F620171005AB876 /* SharedNetwork */,
 				79F617D12F6202BA002DE089 /* Alamofire */,
+				79A4295A2F72FA3B00BB4ECF /* SharedWorkers */,
 			);
 			productName = longfolio_desktop;
 			productReference = 79C81F902F61FE49002A0870 /* longfolio_desktop.app */;
@@ -282,6 +287,7 @@
 				7920C2062F61FFAD005AB876 /* SharedModels */,
 				7920C20D2F620168005AB876 /* SharedNetwork */,
 				79F617D32F6202C1002DE089 /* Alamofire */,
+				79A4295C2F72FA4300BB4ECF /* SharedWorkers */,
 			);
 			productName = longfolio_ios;
 			productReference = 79C81FD72F61FF1B002A0870 /* longfolio_ios.app */;
@@ -1038,6 +1044,14 @@
 		7920C20F2F620171005AB876 /* SharedNetwork */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SharedNetwork;
+		};
+		79A4295A2F72FA3B00BB4ECF /* SharedWorkers */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedWorkers;
+		};
+		79A4295C2F72FA4300BB4ECF /* SharedWorkers */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedWorkers;
 		};
 		79F617D12F6202BA002DE089 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
