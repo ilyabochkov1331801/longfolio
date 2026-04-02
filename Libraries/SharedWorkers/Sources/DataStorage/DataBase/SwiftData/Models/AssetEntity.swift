@@ -31,6 +31,8 @@ final class AssetTickerEntity {
     @Attribute(.unique)
     var ticker: String
     
+    var exchange: ExchangeEntity?
+    
     init(ticker: String) {
         self.ticker = ticker
     }

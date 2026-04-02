@@ -5,7 +5,9 @@
 //  Created by Alena Nesterkina on 24.03.26.
 //
 
-public struct Portfolio {
+import Foundation
+
+public struct Portfolio: Equatable, Hashable {
     let name: String
     let cashAmount: [Amount] // different currencies
     let assetsTransactions: [AssetTransaction]

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AssetTransaction {
+public struct AssetTransaction: Equatable, Hashable  {
     let id: String
     let date: Date
     let type: AssetTransactionType
