@@ -15,9 +15,9 @@ struct TabBarScreenView: View {
     
     var body: some View {
         TabView(selection: $router.selectedTab) {
-            PortfoliosScrenView(
-                router: .init(),
-                viewModel: .init(dependencyContainer: dependencyContainer)
+            PortfoliosScreen(
+                viewModel: .init(dependencyContainer: dependencyContainer),
+                router: .init()
             )
             .tabItem {
                 Label("Portfolio", systemImage: "briefcase.fill")

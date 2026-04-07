@@ -28,13 +28,14 @@ final class AssetEntity {
 
 @Model
 final class AssetTickerEntity {
-    @Attribute(.unique)
+    #Unique<AssetTickerEntity>([\.ticker, \.exchange])
+
     var ticker: String
+    var exchange: ExchangeEntity
     
-    var exchange: ExchangeEntity?
-    
-    init(ticker: String) {
+    init(ticker: String, exchange: ExchangeEntity) {
         self.ticker = ticker
+        self.exchange = exchange
     }
 }
 
@@ -42,10 +43,11 @@ final class AssetTickerEntity {
 final class AssetDayPriceEntity {
     var date: Date
     var price: Amount
-    var asset: AssetEntity?
+    var asset: AssetEntity
     
-    init(date: Date, price: Amount) {
+    init(date: Date, price: Amount, asset: AssetEntity) {
         self.date = date
         self.price = price
+        self.asset = asset
     }
 }

@@ -1,0 +1,48 @@
+//
+//  PortfolioStorage.swift
+//  SharedWorkers
+//
+//  Created by Assistant on 06.04.26.
+//
+
+import Foundation
+import SwiftData
+import SharedModels
+
+public protocol ManagesPortfolioData {
+    func fetchPortfolios() throws -> [Portfolio]
+    func createNewPortfolio(with name: String) throws
+}
+
+public final class PortfolioDataManager: ManagesPortfolioData {
+    private let dataBase: SwiftDataBaseProtocol
+    private let mapper: SwiftDataModelsMapper
+
+    public init(dataBase: SwiftDataBaseProtocol) {
+        self.dataBase = dataBase
+        self.mapper = SwiftDataModelsMapper()
+    }
+
+    public func fetchPortfolios() throws -> [Portfolio] {
+        let descriptor = FetchDescriptor<PortfolioEntity>(
+            sortBy: [SortDescriptor(\.name)]
+        )
+
+        return try dataBase.fetch(descriptor: descriptor).map(mapper.makePortfolio)
+    }
+
+    public func createNewPortfolio(with name: String) throws {
+        let portfolio = PortfolioEntity(
+            name: name,
+            cashAmount: [],
+            assetsTransactions: [],
+            dividendTransactions: [],
+            cashTransactions: [],
+            positions: [],
+            snapshots: []
+        )
+
+        dataBase.insert(entity: portfolio)
+        try dataBase.save()
+    }
+}

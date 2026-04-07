@@ -16,7 +16,7 @@ final class ExchangeEntity {
     var country: String
     var currency: Currency
     
-    @Relationship(deleteRule: .cascade, inverse: \AssetTickerEntity.exchange)
+    @Relationship(deleteRule: .cascade, inverse: \AssetTicker.exchange)
     var tickers: [AssetTickerEntity]
     
     init(name: String, code: String, country: String, currency: Currency, tickers: [AssetTickerEntity]) {

@@ -6,7 +6,13 @@
 //
 
 public struct Position: Equatable, Hashable  {
-    let ticker: AssetTicker
-    let quantity: Double
-    let averageOpenPrice: Amount
+    public let ticker: AssetTicker
+    public let quantity: Double
+    public let averageOpenPrice: Amount
+
+    public init(ticker: AssetTicker, quantity: Double, averageOpenPrice: Amount) {
+        self.ticker = ticker
+        self.quantity = quantity
+        self.averageOpenPrice = averageOpenPrice
+    }
 }

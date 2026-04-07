@@ -9,8 +9,6 @@ import SwiftUI
 import SharedModels
 
 struct PortfoliosScreen: View {
-    @EnvironmentObject private var dependencyContainer: DIContainer
-
     @State var viewModel: PortfoliosScreenViewModel
     @StateObject var router: PortfoliosScreenRouter
 
@@ -19,7 +17,7 @@ struct PortfoliosScreen: View {
             state: $viewModel.state,
             router: router
         ) { screenModel in
-            Text("test")
+            content(screenModel)
         } navigation: { route in
             switch route {
             case .createNewPortfolio:
@@ -28,6 +26,34 @@ struct PortfoliosScreen: View {
                 EmptyView()
             }
         }
-        .task { await viewModel.loadPortfolios() }
+        .navigationTitle("Portfolios")
+        .task {
+            await viewModel.loadPortfolios()
+        }
+    }
+
+    @ViewBuilder
+    private func content(_ screenModel: PortfoliosScreenModel) -> some View {
+        if screenModel.portfolios.isEmpty {
+            ContentUnavailableView(
+                "No portfolios yet",
+                systemImage: "briefcase",
+                description: Text("Create or import a portfolio to start tracking assets.")
+            )
+        } else {
+            List(screenModel.portfolios, id: \.name) { portfolio in
+                HStack(spacing: 12) {
+                    Image(systemName: "briefcase.fill")
+                        .foregroundStyle(.tint)
+
+                    Text(portfolio.name)
+                        .font(.headline)
+
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+            .listStyle(.plain)
+        }
     }
 }

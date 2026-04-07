@@ -10,4 +10,11 @@ public struct Exchange: Equatable, Hashable  {
     public let code: String
     public let country: String
     public let currency: Currency
+
+    public init(name: String, code: String, country: String, currency: Currency) {
+        self.name = name
+        self.code = code
+        self.country = country
+        self.currency = currency
+    }
 }

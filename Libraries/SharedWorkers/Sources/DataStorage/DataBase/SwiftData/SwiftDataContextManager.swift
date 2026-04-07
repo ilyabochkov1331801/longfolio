@@ -20,4 +20,22 @@ public final class SwiftDataContextManager: ManagesSwiftDataContext {
         self.container = try ModelContainer(for: Schema(models))
         self.context = ModelContext(container)
     }
+    
+    public static func createDefault() throws -> SwiftDataContextManager {
+        try SwiftDataContextManager(
+            models: [
+                AssetEntity.self,
+                AssetTickerEntity.self,
+                AssetDayPriceEntity.self,
+                AssetTransactionEntity.self,
+                CashTransactionEntity.self,
+                DividendTransactionEntity.self,
+                ExchangeEntity.self,
+                PortfolioEntity.self,
+                PositionEntity.self,
+                PositionSnapshotEntity.self,
+                PortfolioSnapshotEntity.self
+            ]
+        )
+    }
 }

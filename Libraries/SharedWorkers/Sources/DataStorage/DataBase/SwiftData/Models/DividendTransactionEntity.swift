@@ -20,13 +20,21 @@ final class DividendTransactionEntity {
     var date: Date
     var quantity: Double
     var amount: Amount
-    var portfolio: PortfolioEntity?
+    var portfolio: PortfolioEntity
     
-    init(id: String, date: Date, ticker: AssetTickerEntity, quantity: Double, amount: Amount) {
+    init(
+        id: String,
+        date: Date,
+        ticker: AssetTickerEntity,
+        quantity: Double,
+        amount: Amount,
+        portfolio: PortfolioEntity
+    ) {
         self.id = id
         self.date = date
         self.ticker = ticker
         self.quantity = quantity
         self.amount = amount
+        self.portfolio = portfolio
     }
 }

@@ -8,11 +8,29 @@
 import Foundation
 
 public struct Portfolio: Equatable, Hashable {
-    let name: String
-    let cashAmount: [Amount] // different currencies
-    let assetsTransactions: [AssetTransaction]
-    let cashTransactions: [CashTransaction]
-    let dividendsTransactions: [DividendTransaction]
-    let positions: [Position]
-    let snaphots: [PortfolioSnapshot]
+    public let name: String
+    public let cashAmount: [Amount]
+    public let assetsTransactions: [AssetTransaction]
+    public let cashTransactions: [CashTransaction]
+    public let dividendsTransactions: [DividendTransaction]
+    public let positions: [Position]
+    public let snaphots: [PortfolioSnapshot]
+
+    public init(
+        name: String,
+        cashAmount: [Amount],
+        assetsTransactions: [AssetTransaction],
+        cashTransactions: [CashTransaction],
+        dividendsTransactions: [DividendTransaction],
+        positions: [Position],
+        snaphots: [PortfolioSnapshot]
+    ) {
+        self.name = name
+        self.cashAmount = cashAmount
+        self.assetsTransactions = assetsTransactions
+        self.cashTransactions = cashTransactions
+        self.dividendsTransactions = dividendsTransactions
+        self.positions = positions
+        self.snaphots = snaphots
+    }
 }

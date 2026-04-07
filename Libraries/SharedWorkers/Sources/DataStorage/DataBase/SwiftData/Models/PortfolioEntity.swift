@@ -13,6 +13,8 @@ import SharedModels
 final class PortfolioEntity {
     @Attribute(.unique)
     var name: String
+
+    var cashAmount: [Amount]
     
     @Relationship(deleteRule: .cascade, inverse: \AssetTransactionEntity.portfolio)
     var assetsTransactions: [AssetTransactionEntity]
@@ -31,6 +33,7 @@ final class PortfolioEntity {
     
     init(
         name: String,
+        cashAmount: [Amount],
         assetsTransactions: [AssetTransactionEntity],
         dividendTransactions: [DividendTransactionEntity],
         cashTransactions: [CashTransactionEntity],
@@ -38,6 +41,7 @@ final class PortfolioEntity {
         snapshots: [PortfolioSnapshotEntity]
     ) {
         self.name = name
+        self.cashAmount = cashAmount
         self.assetsTransactions = assetsTransactions
         self.dividendTransactions = dividendTransactions
         self.cashTransactions = cashTransactions
