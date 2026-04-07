@@ -11,9 +11,8 @@ import Combine
 protocol Router: ObservableObject {
     associatedtype Route: Hashable & Identifiable
     
-    var navigationPath: NavigationPath { get set }
     var modalNavigationPath: Route? { get set }
-    
+
     func navigateBack()
     func navigateToRoot()
     func navigate(to route: Route)
@@ -22,25 +21,26 @@ protocol Router: ObservableObject {
 }
 
 class DefaultRouter<Route: Hashable & Identifiable>: ObservableObject, Router {
-    @Published var navigationPath = NavigationPath()
     @Published var modalNavigationPath: Route?
     
-    private let parent: (any Router)?
+    let root: any RootRouter
+    let parent: (any Router)?
     
-    init(parent: (any Router)?) {
+    init(root: any RootRouter, parent: (any Router)?) {
+        self.root = root
         self.parent = parent
     }
     
     func navigateBack() {
-        navigationPath.removeLast()
+        root.navigateBack()
     }
     
     func navigateToRoot() {
-        navigationPath.removeLast(navigationPath.count)
+        root.navigateToRoot()
     }
     
     func navigate(to route: Route) {
-        navigationPath.append(route)
+        root.navigationPath.append(route)
     }
     
     func navigateModaly(to route: Route) {
@@ -52,9 +52,3 @@ class DefaultRouter<Route: Hashable & Identifiable>: ObservableObject, Router {
         parent?.dismiss()
     }
 }
-
-extension Identifiable where Self: Hashable {
-    var id: Int { hashValue }
-}
-
-enum EmptyRoute: Identifiable, Hashable { }

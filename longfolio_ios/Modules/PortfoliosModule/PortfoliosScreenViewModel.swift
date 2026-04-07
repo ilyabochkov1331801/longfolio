@@ -16,7 +16,7 @@ struct PortfoliosScreenModel: Equatable {
 
 @Observable
 final class PortfoliosScreenViewModel {
-    var state: BaseScreenViewState<PortfoliosScreenModel> = .loading
+    var state: ScreenViewState<PortfoliosScreenModel> = .loading
     private let portfolioDataManager: ManagesPortfolioData
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []

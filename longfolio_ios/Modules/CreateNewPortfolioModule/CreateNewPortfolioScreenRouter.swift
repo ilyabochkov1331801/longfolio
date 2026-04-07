@@ -7,4 +7,4 @@
 
 import Foundation
 
-final class CreateNewPortfolioScreenRouter: DefaultRouter<EmptyRoute> { }
+final class CreateNewPortfolioScreenRouter: DefaultRootRouter<EmptyRoute> { }

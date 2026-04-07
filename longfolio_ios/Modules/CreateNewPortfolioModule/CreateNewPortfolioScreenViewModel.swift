@@ -15,7 +15,7 @@ struct CreateNewPortfolioScreenModel: Equatable {
 
 @Observable
 final class CreateNewPortfolioScreenViewModel {
-    var state: BaseScreenViewState<CreateNewPortfolioScreenModel> = .normal(
+    var state: ScreenViewState<CreateNewPortfolioScreenModel> = .normal(
         CreateNewPortfolioScreenModel(portfolioName: "", canSave: false)
     )
 

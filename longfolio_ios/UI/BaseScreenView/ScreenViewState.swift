@@ -1,5 +1,5 @@
 //
-//  BaseViewState.swift
+//  ScreenViewState.swift
 //  longfolio
 //
 //  Created by Илья Бочков on 2.04.26.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-enum BaseScreenViewState<Model: Equatable>: Equatable {
-    static func == (lhs: BaseScreenViewState<Model>, rhs: BaseScreenViewState<Model>) -> Bool {
+enum ScreenViewState<Model: Equatable>: Equatable {
+    static func == (lhs: ScreenViewState<Model>, rhs: ScreenViewState<Model>) -> Bool {
         switch (lhs, rhs) {
         case (.loading, .loading):
             return true

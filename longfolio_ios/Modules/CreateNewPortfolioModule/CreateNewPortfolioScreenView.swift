@@ -12,7 +12,7 @@ struct CreateNewPortfolioScreenView: View {
     @StateObject var router: CreateNewPortfolioScreenRouter
 
     var body: some View {
-        BaseScreenView(
+        RootScreenView(
             state: $viewModel.state,
             router: router
         ) { screenModel in

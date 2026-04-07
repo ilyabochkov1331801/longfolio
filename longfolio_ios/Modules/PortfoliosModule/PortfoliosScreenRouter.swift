@@ -13,4 +13,4 @@ enum PortfoliosScreenRoute: Hashable, Identifiable {
     case portfolioDetails(Portfolio)
 }
 
-final class PortfoliosScreenRouter: DefaultRouter<PortfoliosScreenRoute> { }
+final class PortfoliosScreenRouter: DefaultRootRouter<PortfoliosScreenRoute> { }

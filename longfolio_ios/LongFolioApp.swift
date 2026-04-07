@@ -13,8 +13,11 @@ struct LongFolioApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RootScreenView(viewModel: RootScreenViewModel(dependencyContainer: dependencyContainer))
-                .environmentObject(dependencyContainer)
+            TabBarScreenView(
+                router: .init(),
+                viewModel: .init(dependencyContainer: dependencyContainer)
+            )
+            .environmentObject(dependencyContainer)
         }
     }
 }

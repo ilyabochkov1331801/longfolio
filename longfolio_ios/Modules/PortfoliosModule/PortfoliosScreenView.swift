@@ -15,7 +15,7 @@ struct PortfoliosScreenView: View {
     @StateObject var router: PortfoliosScreenRouter
 
     var body: some View {
-        BaseScreenView(
+        RootScreenView(
             state: $viewModel.state,
             router: router
         ) { screenModel in
@@ -37,8 +37,14 @@ struct PortfoliosScreenView: View {
                     viewModel: .init(dependencyContainer: dependencyContainer),
                     router: .init(parent: router)
                 )
-            case .portfolioDetails:
-                EmptyView()
+            case let .portfolioDetails(portfolio):
+                PortfolioDetailsScreenView(
+                    viewModel: .init(
+                        dependencyContainer: dependencyContainer,
+                        portfolio: portfolio
+                    ),
+                    router: .init(root: router, parent: router)
+                )
             }
         }
         .task {
@@ -57,15 +63,24 @@ struct PortfoliosScreenView: View {
         } else {
             List {
                 ForEach(screenModel.portfolios, id: \.name) { portfolio in
-                    HStack(spacing: 12) {
-                        Image(systemName: "briefcase.fill")
-                            .foregroundStyle(.tint)
+                    Button {
+                        router.navigate(to: .portfolioDetails(portfolio))
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "briefcase.fill")
+                                .foregroundStyle(.tint)
 
-                        Text(portfolio.name)
-                            .font(.headline)
+                            Text(portfolio.name)
+                                .font(.headline)
 
-                        Spacer()
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.footnote)
+                                .foregroundStyle(.tertiary)
+                        }
                     }
+                    .buttonStyle(.plain)
                     .padding(.vertical, 4)
                 }
                 .onDelete { indeces in
