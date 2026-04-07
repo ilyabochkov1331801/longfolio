@@ -9,9 +9,13 @@ import SwiftUI
 
 struct RootScreenView: View {
     @EnvironmentObject var dependencyContainer: DIContainer
+    
     @State var viewModel: RootScreenViewModel
     
     var body: some View {
-        TabBarScreenView(viewModel: TabBarScreenViewModel(dependencyContainer: dependencyContainer))
+        TabBarScreenView(
+            router: .init(),
+            viewModel: .init(dependencyContainer: dependencyContainer)
+        )
     }
 }

@@ -8,16 +8,21 @@
 import SwiftUI
 
 struct TabBarScreenView: View {
+    @EnvironmentObject private var dependencyContainer: DIContainer
+    
+    @StateObject var router: TabBarScreenRouter
     @State var viewModel: TabBarScreenViewModel
-    @StateObject var tabBarRouter = TabBarScreenRouter()
     
     var body: some View {
-        TabView(selection: $tabBarRouter.selectedTab) {
-            PortfoliosScrenView(viewModel: viewModel.portfoliosScrenViewModel)
-                .tabItem {
-                    Label("Portfolio", systemImage: "briefcase.fill")
-                }
-                .tag(Tab.portfolios)
+        TabView(selection: $router.selectedTab) {
+            PortfoliosScrenView(
+                router: .init(),
+                viewModel: .init(dependencyContainer: dependencyContainer)
+            )
+            .tabItem {
+                Label("Portfolio", systemImage: "briefcase.fill")
+            }
+            .tag(Tab.portfolios)
             
             Text("Assets")
                 .tabItem {
@@ -31,6 +36,6 @@ struct TabBarScreenView: View {
                 }
                 .tag(Tab.settings)
         }
-        .environmentObject(tabBarRouter)
+        .environmentObject(router)
     }
 }

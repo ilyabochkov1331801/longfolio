@@ -8,8 +8,8 @@
 import SwiftUI
  
 struct PortfoliosScrenView: View {
-    @StateObject var router = PortfoliosScreenRouter()
-    @State var viewModel: PortfoliosScrenViewModel
+    @StateObject var router: PortfoliosScreenRouter
+    @State var viewModel: PortfoliosScreenViewModel
     
     var body: some View {
         BaseScreenView(

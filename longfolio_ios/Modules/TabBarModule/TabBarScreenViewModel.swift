@@ -9,9 +9,7 @@ import SwiftUI
 
 @Observable
 final class TabBarScreenViewModel {
-    let portfoliosScrenViewModel: PortfoliosScrenViewModel
-    
     init(dependencyContainer: DIContainer) {
-        portfoliosScrenViewModel = PortfoliosScrenViewModel(dependencyContainer: dependencyContainer)
+        
     }
 }

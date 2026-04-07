@@ -9,13 +9,14 @@ import Combine
 import SwiftData
 import Foundation
 import SharedModels
+import SharedWorkers
 
 struct PortfoliosScreenModel {
     let portfolios: [Portfolio]
 }
 
 @Observable
-final class PortfoliosScrenViewModel {
+final class PortfoliosScreenViewModel {
     var state: BaseScreenViewState<PortfoliosScreenModel> = .loading
     
     private var cancelBag: Set<AnyCancellable> = []
@@ -26,7 +27,7 @@ final class PortfoliosScrenViewModel {
 }
 
 @MainActor
-extension PortfoliosScrenViewModel {
+extension PortfoliosScreenViewModel {
     func loadPortfolios() async {
         state = .normal(PortfoliosScreenModel(portfolios: []))
     }
