@@ -6,27 +6,75 @@
 //
 
 import SwiftUI
- 
-struct PortfoliosScrenView: View {
-    @StateObject var router: PortfoliosScreenRouter
+import SharedModels
+
+struct PortfoliosScreenView: View {
+    @EnvironmentObject private var dependencyContainer: DIContainer
+
     @State var viewModel: PortfoliosScreenViewModel
-    
+    @StateObject var router: PortfoliosScreenRouter
+
     var body: some View {
         BaseScreenView(
             state: $viewModel.state,
             router: router
         ) { screenModel in
-            Text("Screen")
+            content(screenModel)
+                .navigationTitle("Portfolios")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            router.navigateModaly(to: .createNewPortfolio)
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                    }
+                }
         } navigation: { route in
             switch route {
             case .createNewPortfolio:
-                Text("")
-            case let .portfolioDetails(portfolio):
-                Text("")
+                CreateNewPortfolioScreenView(
+                    viewModel: .init(dependencyContainer: dependencyContainer),
+                    router: .init(parent: router)
+                )
+            case .portfolioDetails:
+                EmptyView()
             }
         }
         .task {
-            await viewModel.loadPortfolios()
+            viewModel.loadPortfolios()
+        }
+    }
+
+    @ViewBuilder
+    private func content(_ screenModel: PortfoliosScreenModel) -> some View {
+        if screenModel.portfolios.isEmpty {
+            ContentUnavailableView(
+                "No portfolios yet",
+                systemImage: "briefcase",
+                description: Text("Create or import a portfolio to start tracking assets.")
+            )
+        } else {
+            List {
+                ForEach(screenModel.portfolios, id: \.name) { portfolio in
+                    HStack(spacing: 12) {
+                        Image(systemName: "briefcase.fill")
+                            .foregroundStyle(.tint)
+
+                        Text(portfolio.name)
+                            .font(.headline)
+
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
+                }
+                .onDelete { indeces in
+                    for index in indeces {
+                        viewModel.deletePortfolio(with: screenModel.portfolios[index].name)
+                    }
+                }
+            }
+            .listStyle(.plain)
         }
     }
 }

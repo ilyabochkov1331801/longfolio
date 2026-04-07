@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BaseScreenView<ContentView: View, ScreenModel, ScreenRouter: Router, RouteView: View>: View {
+struct BaseScreenView<ContentView: View, ScreenModel: Equatable, ScreenRouter: Router, RouteView: View>: View {
     @ObservedObject private var router: ScreenRouter
     @Binding private var state: BaseScreenViewState<ScreenModel>
     
@@ -43,8 +43,23 @@ struct BaseScreenView<ContentView: View, ScreenModel, ScreenRouter: Router, Rout
                 }
             }
             .animation(.default, value: state)
+            .navigationDestination(for: ScreenRouter.Route.self, destination: navigation)
+            .sheet(item: $router.modalNavigationPath, content: navigation)
         }
-        .navigationDestination(for: ScreenRouter.Route.self, destination: navigation)
-        .sheet(item: $router.modalNavigationPath, content: navigation)
+    }
+}
+
+extension BaseScreenView where ScreenRouter.Route == EmptyRoute, RouteView == EmptyView {
+    init(
+        state: Binding<BaseScreenViewState<ScreenModel>>,
+        router: ScreenRouter,
+        @ViewBuilder viewBuilder: @escaping (ScreenModel) -> ContentView,
+    ) {
+        self.init(
+            state: state,
+            router: router,
+            viewBuilder: viewBuilder,
+            navigation: { _ in }
+        )
     }
 }

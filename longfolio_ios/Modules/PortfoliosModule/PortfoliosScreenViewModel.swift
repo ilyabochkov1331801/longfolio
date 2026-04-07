@@ -6,10 +6,11 @@
 //
 
 import Foundation
+import Combine
 import SharedModels
 import SharedWorkers
 
-struct PortfoliosScreenModel {
+struct PortfoliosScreenModel: Equatable {
     let portfolios: [Portfolio]
 }
 
@@ -17,19 +18,39 @@ struct PortfoliosScreenModel {
 final class PortfoliosScreenViewModel {
     var state: BaseScreenViewState<PortfoliosScreenModel> = .loading
     private let portfolioDataManager: ManagesPortfolioData
+    private let contextManager: ManagesSwiftDataContext
+    private var cancelBag: Set<AnyCancellable> = []
 
     init(dependencyContainer: DIContainer) {
+        self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
+        setupBindings()
     }
 }
 
 @MainActor
 extension PortfoliosScreenViewModel {
-    func loadPortfolios() async {
+    func setupBindings() {
+        contextManager.updatesPublisher
+        .sink { [weak self] notification in
+            self?.loadPortfolios()
+        }
+        .store(in: &cancelBag)
+    }
+
+    func loadPortfolios() {
         do {
             let portfolios = try portfolioDataManager.fetchPortfolios()
             state = .normal(PortfoliosScreenModel(portfolios: portfolios))
+        } catch {
+            state = .error(error)
+        }
+    }
+
+    func deletePortfolio(with name: String) {
+        do {
+            try portfolioDataManager.deletePortfolio(with: name)
         } catch {
             state = .error(error)
         }

@@ -25,6 +25,12 @@ class DefaultRouter<Route: Hashable & Identifiable>: ObservableObject, Router {
     @Published var navigationPath = NavigationPath()
     @Published var modalNavigationPath: Route?
     
+    private let parent: (any Router)?
+    
+    init(parent: (any Router)?) {
+        self.parent = parent
+    }
+    
     func navigateBack() {
         navigationPath.removeLast()
     }
@@ -43,9 +49,12 @@ class DefaultRouter<Route: Hashable & Identifiable>: ObservableObject, Router {
     
     func dismiss() {
         modalNavigationPath = nil
+        parent?.dismiss()
     }
 }
 
 extension Identifiable where Self: Hashable {
     var id: Int { hashValue }
 }
+
+enum EmptyRoute: Identifiable, Hashable { }

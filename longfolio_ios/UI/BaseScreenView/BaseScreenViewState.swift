@@ -7,15 +7,15 @@
 
 import SwiftUI
 
-enum BaseScreenViewState<Model>: Equatable {
+enum BaseScreenViewState<Model: Equatable>: Equatable {
     static func == (lhs: BaseScreenViewState<Model>, rhs: BaseScreenViewState<Model>) -> Bool {
         switch (lhs, rhs) {
         case (.loading, .loading):
             return true
         case (.error, .error):
             return true
-        case (.normal, .normal):
-            return true
+        case let (.normal(lhsModel), .normal(rhsModel)):
+            return lhsModel == rhsModel
         default:
             return false
         }

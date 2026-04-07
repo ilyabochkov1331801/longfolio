@@ -15,24 +15,24 @@ struct TabBarScreenView: View {
     
     var body: some View {
         TabView(selection: $router.selectedTab) {
-            PortfoliosScreen(
+            PortfoliosScreenView(
                 viewModel: .init(dependencyContainer: dependencyContainer),
-                router: .init()
+                router: .init(parent: nil)
             )
             .tabItem {
-                Label("Portfolio", systemImage: "briefcase.fill")
+                Label("Portfolio", systemImage: "chart.pie.fill")
             }
             .tag(Tab.portfolios)
             
             Text("Assets")
                 .tabItem {
-                    Label("Assets", systemImage: "briefcase.fill")
+                    Label("Assets", systemImage: "dollarsign.circle.fill")
                 }
                 .tag(Tab.assets)
             
             Text("Settings")
                 .tabItem {
-                    Label("Settings", systemImage: "briefcase.fill")
+                    Label("Settings", systemImage: "gearshape.fill")
                 }
                 .tag(Tab.settings)
         }

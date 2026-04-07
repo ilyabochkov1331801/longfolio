@@ -12,6 +12,7 @@ import SharedModels
 public protocol ManagesPortfolioData {
     func fetchPortfolios() throws -> [Portfolio]
     func createNewPortfolio(with name: String) throws
+    func deletePortfolio(with name: String) throws
 }
 
 public final class PortfolioDataManager: ManagesPortfolioData {
@@ -43,6 +44,19 @@ public final class PortfolioDataManager: ManagesPortfolioData {
         )
 
         dataBase.insert(entity: portfolio)
+        try dataBase.save()
+    }
+
+    public func deletePortfolio(with name: String) throws {
+        let descriptor = FetchDescriptor<PortfolioEntity>(
+            predicate: #Predicate { $0.name == name }
+        )
+
+        guard let portfolio = try dataBase.fetch(descriptor: descriptor).first else {
+            return
+        }
+
+        dataBase.delete(entity: portfolio)
         try dataBase.save()
     }
 }
