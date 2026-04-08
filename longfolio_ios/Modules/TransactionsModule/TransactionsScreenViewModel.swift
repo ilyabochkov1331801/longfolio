@@ -1,8 +1,8 @@
 //
-//  PortfolioDetailsScreenViewModel.swift
+//  TransactionsScreenViewModel.swift
 //  longfolio
 //
-//  Created by Assistant on 06.04.26.
+//  Created by Assistant on 08.04.26.
 //
 
 import Foundation
@@ -10,13 +10,13 @@ import Combine
 import SharedModels
 import SharedWorkers
 
-struct PortfolioDetailsScreenModel: Equatable {
+struct TransactionsScreenModel: Equatable {
     let portfolio: Portfolio
 }
 
 @Observable
-final class PortfolioDetailsScreenViewModel {
-    var state: ScreenViewState<PortfolioDetailsScreenModel>
+final class TransactionsScreenViewModel {
+    var state: ScreenViewState<TransactionsScreenModel>
 
     private let portfolioName: String
     private let portfolioDataManager: ManagesPortfolioData
@@ -28,28 +28,28 @@ final class PortfolioDetailsScreenViewModel {
         self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
-        self.state = .normal(PortfolioDetailsScreenModel(portfolio: portfolio))
+        self.state = .normal(TransactionsScreenModel(portfolio: portfolio))
         setupBindings()
     }
 }
 
 @MainActor
-extension PortfolioDetailsScreenViewModel {
+extension TransactionsScreenViewModel {
     func setupBindings() {
         contextManager.updatesPublisher
             .sink { [weak self] _ in
-                self?.loadPortfolio()
+                self?.loadTransactions()
             }
             .store(in: &cancelBag)
     }
 
-    func loadPortfolio() {
+    func loadTransactions() {
         do {
             guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolioName) else {
                 return
             }
 
-            state = .normal(PortfolioDetailsScreenModel(portfolio: portfolio))
+            state = .normal(TransactionsScreenModel(portfolio: portfolio))
         } catch {
             state = .error(error)
         }

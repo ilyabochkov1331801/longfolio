@@ -6,5 +6,13 @@
 //
 
 import Foundation
+import SharedModels
 
-final class PortfolioDetailsScreenRouter: DefaultRouter<EmptyRoute> { }
+enum PortfolioDetailsScreenRoute: Hashable, Identifiable {
+    case transactions(Portfolio)
+    case createCashTransaction(Portfolio)
+    case createPositionTransaction(Portfolio)
+    case createDividendTransaction(Portfolio)
+}
+
+final class PortfolioDetailsScreenRouter: DefaultRouter<PortfolioDetailsScreenRoute> { }
