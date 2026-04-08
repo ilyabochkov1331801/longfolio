@@ -21,14 +21,23 @@ final class AssetTransactionEntity {
     var type: AssetTransactionType
     var quantity: Double
     var amount: Amount
-    var portfolio: PortfolioEntity?
+    var portfolio: PortfolioEntity
     
-    init(id: String, date: Date, type: AssetTransactionType, ticker: AssetTickerEntity, quantity: Double, amount: Amount) {
+    init(
+        id: String,
+        date: Date,
+        type: AssetTransactionType,
+        ticker: AssetTickerEntity,
+        quantity: Double,
+        amount: Amount,
+        portfolio: PortfolioEntity
+    ) {
         self.id = id
         self.date = date
         self.type = type
         self.ticker = ticker
         self.quantity = quantity
         self.amount = amount
+        self.portfolio = portfolio
     }
 }

@@ -16,12 +16,18 @@ final class PositionSnapshotEntity {
     
     var quantity: Double
     var price: Amount
-    var portfolio: PortfolioSnapshotEntity?
+    var portfolio: PortfolioSnapshotEntity
     
-    init(ticker: AssetTickerEntity, quantity: Double, price: Amount) {
+    init(
+        ticker: AssetTickerEntity,
+        quantity: Double,
+        price: Amount,
+        portfolio: PortfolioSnapshotEntity
+    ) {
         self.ticker = ticker
         self.quantity = quantity
         self.price = price
+        self.portfolio = portfolio
     }
 }
 
@@ -33,12 +39,19 @@ final class PortfolioSnapshotEntity {
     var date: Date
     var name: String
     var cache: [Amount]
-    var portfolio: PortfolioEntity?
+    var portfolio: PortfolioEntity
     
-    init(positions: [PositionSnapshotEntity], date: Date, name: String, cache: [Amount]) {
+    init(
+        positions: [PositionSnapshotEntity],
+        date: Date,
+        name: String,
+        cache: [Amount],
+        portfolio: PortfolioEntity
+    ) {
         self.positions = positions
         self.date = date
         self.name = name
         self.cache = cache
+        self.portfolio = portfolio
     }
 }

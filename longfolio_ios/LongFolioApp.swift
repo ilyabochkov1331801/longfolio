@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct LongFolioApp: App {
+    @State var dependencyContainer = DIContainer()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: ContentViewModel())
+            TabBarScreenView(
+                router: .init(),
+                viewModel: .init(dependencyContainer: dependencyContainer)
+            )
+            .environmentObject(dependencyContainer)
         }
     }
 }

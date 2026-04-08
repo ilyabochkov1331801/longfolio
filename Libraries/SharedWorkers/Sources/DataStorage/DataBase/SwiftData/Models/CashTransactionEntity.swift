@@ -16,11 +16,12 @@ final class CashTransactionEntity {
     
     var date: Date
     var amount: Amount
-    var portfolio: PortfolioEntity?
+    var portfolio: PortfolioEntity
     
-    init(id: String, date: Date, amount: Amount) {
+    init(id: String, date: Date, amount: Amount, portfolio: PortfolioEntity) {
         self.id = id
         self.date = date
         self.amount = amount
+        self.portfolio = portfolio
     }
 }

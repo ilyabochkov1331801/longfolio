@@ -16,11 +16,17 @@ final class PositionEntity {
     
     var quantity: Double
     var averageOpenPrice: Amount
-    var portfolio: PortfolioEntity?
+    var portfolio: PortfolioEntity
     
-    init(ticker: AssetTickerEntity, quantity: Double, averageOpenPrice: Amount) {
+    init(
+        ticker: AssetTickerEntity,
+        quantity: Double,
+        averageOpenPrice: Amount,
+        portfolio: PortfolioEntity
+    ) {
         self.ticker = ticker
         self.quantity = quantity
         self.averageOpenPrice = averageOpenPrice
+        self.portfolio = portfolio
     }
 }

@@ -7,9 +7,16 @@
 
 import Foundation
 
-public struct DividendTransaction {
-    let id: String
-    let date: Date
-    let asset: AssetTicker
-    let amount: Amount
+public struct DividendTransaction: Equatable, Hashable  {
+    public let id: String
+    public let date: Date
+    public let asset: AssetTicker
+    public let amount: Amount
+
+    public init(id: String, date: Date, asset: AssetTicker, amount: Amount) {
+        self.id = id
+        self.date = date
+        self.asset = asset
+        self.amount = amount
+    }
 }
