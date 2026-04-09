@@ -8,4 +8,6 @@
 public enum Currency: String, Equatable, Hashable, Codable, Sendable {
     case usd
     case eur
+    
+    case unknown
 }

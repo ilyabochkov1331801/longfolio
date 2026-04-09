@@ -11,6 +11,7 @@ import SharedModels
 
 public protocol ManagesPortfolioData {
     func fetchPortfolios() throws -> [Portfolio]
+    func fetchPortfolio(with name: String) throws -> Portfolio?
     func createNewPortfolio(with name: String) throws
     func deletePortfolio(with name: String) throws
 }
@@ -30,6 +31,14 @@ public final class PortfolioDataManager: ManagesPortfolioData {
         )
 
         return try dataBase.fetch(descriptor: descriptor).map(mapper.makePortfolio)
+    }
+
+    public func fetchPortfolio(with name: String) throws -> Portfolio? {
+        let descriptor = FetchDescriptor<PortfolioEntity>(
+            predicate: #Predicate { $0.name == name }
+        )
+
+        return try dataBase.fetch(descriptor: descriptor).first.map(mapper.makePortfolio)
     }
 
     public func createNewPortfolio(with name: String) throws {
