@@ -15,11 +15,8 @@ struct PortfoliosScreenView: View {
     @StateObject var router: PortfoliosScreenRouter
 
     var body: some View {
-        RootScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
-            content(screenModel)
+        RootScreenView(router: router) {
+            screenContent
                 .navigationTitle("Portfolios")
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -53,43 +50,45 @@ struct PortfoliosScreenView: View {
     }
 
     @ViewBuilder
-    private func content(_ screenModel: PortfoliosScreenModel) -> some View {
-        if screenModel.portfolios.isEmpty {
-            ContentUnavailableView(
-                "No portfolios yet",
-                systemImage: "briefcase",
-                description: Text("Create or import a portfolio to start tracking assets.")
-            )
-        } else {
-            List {
-                ForEach(screenModel.portfolios, id: \.name) { portfolio in
-                    Button {
-                        router.navigate(to: .portfolioDetails(portfolio))
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "briefcase.fill")
-                                .foregroundStyle(.tint)
+    private var screenContent: some View {
+        List {
+            ForEach(viewModel.portfolios, id: \.name) { portfolio in
+                Button {
+                    router.navigate(to: .portfolioDetails(portfolio))
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "briefcase.fill")
+                            .foregroundStyle(.tint)
 
-                            Text(portfolio.name)
-                                .font(.headline)
+                        Text(portfolio.name)
+                            .font(.headline)
 
-                            Spacer()
+                        Spacer()
 
-                            Image(systemName: "chevron.right")
-                                .font(.footnote)
-                                .foregroundStyle(.tertiary)
-                        }
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundStyle(.tertiary)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.vertical, 4)
                 }
-                .onDelete { indeces in
-                    for index in indeces {
-                        viewModel.deletePortfolio(with: screenModel.portfolios[index].name)
-                    }
+                .buttonStyle(.plain)
+                .padding(.vertical, 4)
+            }
+            .onDelete { indeces in
+                for index in indeces {
+                    viewModel.deletePortfolio(with: viewModel.portfolios[index].name)
                 }
             }
-            .listStyle(.plain)
+        }
+        .listStyle(.plain)
+        .overlay {
+            if viewModel.portfolios.isEmpty {
+                ContentUnavailableView(
+                    "No portfolios yet",
+                    systemImage: "briefcase",
+                    description: Text("Create or import a portfolio to start tracking assets.")
+                )
+            }
         }
     }
 }
+

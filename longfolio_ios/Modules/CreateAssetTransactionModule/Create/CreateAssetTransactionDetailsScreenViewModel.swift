@@ -9,108 +9,50 @@ import Foundation
 import SharedModels
 import SharedWorkers
 
-struct CreateAssetTransactionDetailsScreenModel: Equatable {
+@Observable
+final class CreateAssetTransactionDetailsScreenViewModel {
+    private let assetsDataManager: ManagesAssetsData
+    private let transactionsDataManager: ManagesTransactionsData
+    private let portfolioName: String
+
     let asset: Asset
-    let type: AssetTransactionType
-    let date: Date
-    let amount: Double
-    let quantity: Double
+    var type: AssetTransactionType = .buy
+    var date: Date = .now
+    var amount: Double = 0
+    var quantity: Double = 0
+    var error: String?
 
     var canSave: Bool {
         amount > 0 && quantity > 0
     }
-}
-
-@Observable
-final class CreateAssetTransactionDetailsScreenViewModel {
-    var state: ScreenViewState<CreateAssetTransactionDetailsScreenModel>
-    private let assetsDataManager: ManagesAssetsData
-    private let transactionsDataManager: ManagesTransactionsData
-    private let portfolioName: String
 
     init(dependencyContainer: DIContainer, portfolioName: String, asset: Asset) {
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.assetsDataManager = AssetsDataManager(dataBase: dataBase)
         self.transactionsDataManager = TransactionsDataManager(dataBase: dataBase)
         self.portfolioName = portfolioName
-        self.state = .normal(
-            CreateAssetTransactionDetailsScreenModel(
-                asset: asset,
-                type: .buy,
-                date: .now,
-                amount: 0,
-                quantity: 0
-            )
-        )
+        self.asset = asset
     }
 }
 
 @MainActor
 extension CreateAssetTransactionDetailsScreenViewModel {
-    func updateType(_ type: AssetTransactionType, model: CreateAssetTransactionDetailsScreenModel) {
-        state = .normal(
-            CreateAssetTransactionDetailsScreenModel(
-                asset: model.asset,
-                type: type,
-                date: model.date,
-                amount: model.amount,
-                quantity: model.quantity
-            )
-        )
-    }
-
-    func updateDate(_ date: Date, model: CreateAssetTransactionDetailsScreenModel) {
-        state = .normal(
-            CreateAssetTransactionDetailsScreenModel(
-                asset: model.asset,
-                type: model.type,
-                date: date,
-                amount: model.amount,
-                quantity: model.quantity
-            )
-        )
-    }
-
-    func updateAmount(_ amount: Double, model: CreateAssetTransactionDetailsScreenModel) {
-        state = .normal(
-            CreateAssetTransactionDetailsScreenModel(
-                asset: model.asset,
-                type: model.type,
-                date: model.date,
-                amount: amount,
-                quantity: model.quantity
-            )
-        )
-    }
-
-    func updateQuantity(_ quantity: Double, model: CreateAssetTransactionDetailsScreenModel) {
-        state = .normal(
-            CreateAssetTransactionDetailsScreenModel(
-                asset: model.asset,
-                type: model.type,
-                date: model.date,
-                amount: model.amount,
-                quantity: quantity
-            )
-        )
-    }
-
-    func createTransaction(model: CreateAssetTransactionDetailsScreenModel) -> Bool {
-        guard model.canSave else { return false }
+    func createTransaction() -> Bool {
+        guard canSave else { return false }
 
         do {
-            let asset = try assetsDataManager.saveAsset(model.asset)
+            let asset = try assetsDataManager.saveAsset(asset)
             try transactionsDataManager.createAssetTransaction(
                 for: portfolioName,
                 asset: asset.ticker,
-                type: model.type,
-                quantity: model.quantity,
-                amount: Amount(value: model.amount, currency: asset.currency),
-                date: model.date
+                type: type,
+                quantity: quantity,
+                amount: Amount(value: amount, currency: asset.currency),
+                date: date
             )
             return true
         } catch {
-            state = .error(error)
+            self.error = error.localizedDescription
             return false
         }
     }

@@ -15,31 +15,8 @@ struct PortfolioDetailsScreenView: View {
     @StateObject var router: PortfolioDetailsScreenRouter
 
     var body: some View {
-        BaseScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
-            content(screenModel)
-                .navigationTitle(screenModel.portfolio.name)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            Button("Cash") {
-                                router.navigateModaly(to: .createCashTransaction(screenModel.portfolio))
-                            }
-
-                            Button("Asset") {
-                                router.navigateModaly(to: .createAssetTransaction(screenModel.portfolio))
-                            }
-
-                            Button("Dividends") {
-                                router.navigateModaly(to: .createDividendTransaction(screenModel.portfolio))
-                            }
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
+        BaseScreenView(router: router) {
+            screenContent
         } navigation: { route in
             switch route {
             case let .transactions(portfolio):
@@ -69,19 +46,20 @@ struct PortfolioDetailsScreenView: View {
         }
     }
 
-    private func content(_ screenModel: PortfolioDetailsScreenModel) -> some View {
+    @ViewBuilder
+    private var screenContent: some View {
         List {
             Section("Portfolio") {
-                Text(screenModel.portfolio.name)
+                Text(viewModel.portfolio.name)
                     .font(.headline)
             }
 
             Section("Cash Balance") {
-                if screenModel.portfolio.cashAmount.isEmpty {
+                if viewModel.portfolio.cashAmount.isEmpty {
                     Text("No cash balance yet")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(screenModel.portfolio.cashAmount, id: \.currency) { amount in
+                    ForEach(viewModel.portfolio.cashAmount, id: \.currency) { amount in
                         HStack {
                             Text(amount.currency.rawValue.uppercased())
                                 .font(.headline)
@@ -96,11 +74,11 @@ struct PortfolioDetailsScreenView: View {
             }
 
             Section("Positions") {
-                if screenModel.portfolio.positions.isEmpty {
+                if viewModel.portfolio.positions.isEmpty {
                     Text("No positions yet")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(screenModel.portfolio.positions, id: \.ticker) { position in
+                    ForEach(viewModel.portfolio.positions, id: \.ticker) { position in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
                                 Text(position.ticker.ticker)
@@ -134,7 +112,7 @@ struct PortfolioDetailsScreenView: View {
 
             Section("Transactions") {
                 Button {
-                    router.navigate(to: .transactions(screenModel.portfolio))
+                    router.navigate(to: .transactions(viewModel.portfolio))
                 } label: {
                     HStack {
                         Text("Open Transactions")
@@ -148,5 +126,25 @@ struct PortfolioDetailsScreenView: View {
             }
         }
         .listStyle(.plain)
+        .navigationTitle(viewModel.portfolio.name)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button("Cash") {
+                        router.navigateModaly(to: .createCashTransaction(viewModel.portfolio))
+                    }
+
+                    Button("Asset") {
+                        router.navigateModaly(to: .createAssetTransaction(viewModel.portfolio))
+                    }
+
+                    Button("Dividends") {
+                        router.navigateModaly(to: .createDividendTransaction(viewModel.portfolio))
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+            }
+        }
     }
 }

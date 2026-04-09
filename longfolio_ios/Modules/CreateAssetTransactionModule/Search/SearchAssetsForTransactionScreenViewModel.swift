@@ -10,11 +10,6 @@ import SharedModels
 import SharedNetwork
 import SharedWorkers
 
-struct SearchAssetsForTransactionScreenModel: Equatable {
-    let searchQuery: String
-    let displayedAssets: [Asset]
-}
-
 @Observable
 final class SearchAssetsForTransactionScreenViewModel {
     var tickerQuery: String = "" {
@@ -29,8 +24,9 @@ final class SearchAssetsForTransactionScreenViewModel {
         }
     }
     
-    var state: ScreenViewState<SearchAssetsForTransactionScreenModel>
     let portfolioName: String
+    var displayedAssets: [Asset]
+    var error: String?
 
     private let portfolio: Portfolio
     private let eodhdNetworkService: EodhdNetworkServiceProtocol
@@ -44,26 +40,30 @@ final class SearchAssetsForTransactionScreenViewModel {
         self.portfolioName = portfolio.name
         self.eodhdNetworkService = dependencyContainer.eodhdNetworkService
         self.assetsDataManager = assetsDataManager
-        let screenModel = SearchAssetsForTransactionScreenModel(
-            searchQuery: "",
-            displayedAssets: portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.ticker) }
-        )
-        self.state = .normal(screenModel)
+        self.displayedAssets = portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.ticker) }
     }
 }
 
 @MainActor
 extension SearchAssetsForTransactionScreenViewModel {
+    var isSearching: Bool {
+        !tickerQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func emptyStateDescription() -> String {
+        if isSearching {
+            return "Try another ticker or exchange."
+        }
+
+        return "Assets from the portfolio will appear here."
+    }
+
     private func searchAssets(for query: String) async {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedQuery.isEmpty else {
-            state = .normal(
-                SearchAssetsForTransactionScreenModel(
-                    searchQuery: "",
-                    displayedAssets: portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.ticker) }
-                )
-            )
+            displayedAssets = portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.ticker) }
+            error = nil
             return
         }
 
@@ -75,15 +75,11 @@ extension SearchAssetsForTransactionScreenViewModel {
                 return
             }
 
-            state = .normal(
-                SearchAssetsForTransactionScreenModel(
-                    searchQuery: tickerQuery,
-                    displayedAssets: displayedAssets
-                )
-            )
+            error = nil
+            self.displayedAssets = displayedAssets
         } catch {
             guard !Task.isCancelled else { return }
-            state = .error(error)
+            self.error = error.localizedDescription
         }
     }
 

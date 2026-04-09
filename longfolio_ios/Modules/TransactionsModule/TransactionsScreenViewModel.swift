@@ -10,25 +10,22 @@ import Combine
 import SharedModels
 import SharedWorkers
 
-struct TransactionsScreenModel: Equatable {
-    let portfolio: Portfolio
-}
-
 @Observable
 final class TransactionsScreenViewModel {
-    var state: ScreenViewState<TransactionsScreenModel>
-
     private let portfolioName: String
     private let portfolioDataManager: ManagesPortfolioData
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []
+
+    var portfolio: Portfolio
+    var error: String?
 
     init(dependencyContainer: DIContainer, portfolio: Portfolio) {
         self.portfolioName = portfolio.name
         self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
-        self.state = .normal(TransactionsScreenModel(portfolio: portfolio))
+        self.portfolio = portfolio
         setupBindings()
     }
 }
@@ -49,9 +46,10 @@ extension TransactionsScreenViewModel {
                 return
             }
 
-            state = .normal(TransactionsScreenModel(portfolio: portfolio))
+            self.portfolio = portfolio
+            error = nil
         } catch {
-            state = .error(error)
+            self.error = error.localizedDescription
         }
     }
 }
