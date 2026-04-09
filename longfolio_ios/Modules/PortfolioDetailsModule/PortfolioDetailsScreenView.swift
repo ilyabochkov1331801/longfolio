@@ -28,8 +28,8 @@ struct PortfolioDetailsScreenView: View {
                                 router.navigateModaly(to: .createCashTransaction(screenModel.portfolio))
                             }
 
-                            Button("Position") {
-                                router.navigateModaly(to: .createPositionTransaction(screenModel.portfolio))
+                            Button("Asset") {
+                                router.navigateModaly(to: .createAssetTransaction(screenModel.portfolio))
                             }
 
                             Button("Dividends") {
@@ -52,10 +52,16 @@ struct PortfolioDetailsScreenView: View {
                     viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
                     router: .init(parent: router)
                 )
-            case let .createPositionTransaction(portfolio):
-                Text(portfolio.name)
+            case let .createAssetTransaction(portfolio):
+                SearchAssetsForTransactionScreenView(
+                    viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
+                    router: .init(parent: router)
+                )
             case let .createDividendTransaction(portfolio):
-                Text(portfolio.name)
+                CreateDividendTransactionScreenView(
+                    viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
+                    router: .init(parent: router)
+                )
             }
         }
         .task {
@@ -85,6 +91,43 @@ struct PortfolioDetailsScreenView: View {
                             Text(amount.value, format: .number.precision(.fractionLength(2)))
                                 .font(.body.weight(.medium))
                         }
+                    }
+                }
+            }
+
+            Section("Positions") {
+                if screenModel.portfolio.positions.isEmpty {
+                    Text("No positions yet")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(screenModel.portfolio.positions, id: \.ticker) { position in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text(position.ticker.ticker)
+                                    .font(.headline)
+
+                                Spacer()
+
+                                Text(position.quantity, format: .number.precision(.fractionLength(4)))
+                                    .font(.body.weight(.medium))
+                            }
+
+                            HStack {
+                                Text(position.ticker.exchange.code)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Spacer()
+
+                                Text(
+                                    position.averageOpenPrice.value,
+                                    format: .number.precision(.fractionLength(2))
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 2)
                     }
                 }
             }

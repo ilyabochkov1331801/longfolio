@@ -11,7 +11,7 @@ import SharedModels
 enum PortfolioDetailsScreenRoute: Hashable, Identifiable {
     case transactions(Portfolio)
     case createCashTransaction(Portfolio)
-    case createPositionTransaction(Portfolio)
+    case createAssetTransaction(Portfolio)
     case createDividendTransaction(Portfolio)
 }
 
