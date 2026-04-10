@@ -28,6 +28,10 @@ final class SwiftDataModelsMapper {
             priceHistory: entity.priceHistory.map(makeAssetDayPrice)
         )
     }
+    
+    func makeRealtimeAssetPrice(from entity: RealtimeAssetPriceEntity) -> RealtimeAssetPrice {
+        RealtimeAssetPrice(ticker: makeAssetTicker(from: entity.ticker), close: entity.close)
+    }
 
     func makeAssetTransaction(from entity: AssetTransactionEntity) -> AssetTransaction {
         AssetTransaction(
