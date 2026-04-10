@@ -18,13 +18,6 @@ public final class AssetsDataManager: ManagesAssetsData {
     private let dataBase: SwiftDataBaseProtocol
     private let mapper: SwiftDataModelsMapper
 
-    private struct CachedPrice {
-        let price: Double
-        let timestamp: Date
-    }
-
-    private var priceCache: [String: CachedPrice] = [:]
-
     public init(dataBase: SwiftDataBaseProtocol) {
         self.dataBase = dataBase
         self.mapper = SwiftDataModelsMapper()
