@@ -6,47 +6,66 @@
 //
 
 import Foundation
-import SharedNetwork
 import SharedModels
+import SharedNetwork
 
-public protocol ManagesRealtimeAssetPrices {
-    func fetchPrice(for ticker: AssetTicker) async throws -> Double
-    func cachePrice(_ price: Double, for ticker: AssetTicker) async
+public protocol ProvidesRealtimeAssetPrices {
+    func setCurrentPrice(for asset: Asset) async throws -> Asset
 }
 
-public final class RealtimeAssetPriceProvider: ManagesRealtimeAssetPrices {
+public final class RealtimeAssetPriceProvider: ProvidesRealtimeAssetPrices {
     private let eodhdNetworkService: EodhdNetworkServiceProtocol
-    private let cache = PriceCache()
+    private let cache = PriceStore()
     
     public init(eodhdNetworkService: EodhdNetworkServiceProtocol) {
         self.eodhdNetworkService = eodhdNetworkService
     }
     
-    public func fetchPrice(for ticker: AssetTicker) async throws -> Double {
-        if let cached = await cache.get(for: ticker.ticker) {
-            return cached
+    public func setCurrentPrice(for asset: Asset) async throws -> Asset {
+        let ticker = asset.ticker
+        let exchange = asset.ticker.exchange
+        
+        if let cached = await cache.get(for: ticker) {
+            return asset.with(currentPrice: cached)
         }
         
-        let assetPrice = try await eodhdNetworkService.realTimeAssetPrice(for: ticker.ticker, exchange: ticker.exchange.code)
-        
-        await cachePrice(assetPrice.close, for: ticker)
-        return assetPrice.close
-    }
-    
-    public func cachePrice(_ price: Double, for ticker: AssetTicker) async {
-        await cache.set(price, for: ticker.ticker)
+        if let pendingTask = await cache.getTask(for: ticker) {
+            let result = try await pendingTask.value
+            let amount = Amount(value: result.close, currency: asset.currency)
+            return asset.with(currentPrice: amount)
+        }
+
+        let task = eodhdNetworkService.realTimeAssetPriceTask(for: ticker.ticker, exchange: exchange.code)
+        await cache.setTask(for: ticker, task: task)
+        let result = try await task.value
+        let amount = Amount(value: result.close, currency: asset.currency)
+        await cache.set(amount, for: ticker)
+        await cache.removeTask(for: ticker)
+        return asset.with(currentPrice: amount)
     }
 }
 
-actor PriceCache {
-    private var storage: [String: Double] = [:]
+actor PriceStore {
+    private var storage: [AssetTicker: Amount] = [:]
+    private var inFlight: [AssetTicker: Task<EodhdRealtimeAssetPrice, Error>] = [:]
     
-    func get(for ticker: String) -> Double? {
+    func setTask(for ticker: AssetTicker, task: Task<EodhdRealtimeAssetPrice, Error>) {
+        inFlight[ticker] = task
+    }
+    
+    func getTask(for ticker: AssetTicker) -> Task<EodhdRealtimeAssetPrice, Error>? {
+        inFlight[ticker]
+    }
+    
+    func removeTask(for ticker: AssetTicker) {
+        inFlight[ticker] = nil
+    }
+    
+    func get(for ticker: AssetTicker) -> Amount? {
         storage[ticker]
     }
     
-    func set(_ price: Double, for ticker: String) {
+    func set(_ price: Amount, for ticker: AssetTicker) {
         storage[ticker] = price
     }
 }
-

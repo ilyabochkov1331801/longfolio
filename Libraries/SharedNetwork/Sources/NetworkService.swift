@@ -11,7 +11,7 @@ import Foundation
 public protocol NetworkService {
     var decoder: DataDecoder { get }
     
-    func execute<T: Decodable & Sendable>(request: URLRequestConvertible) async throws -> T
+    func execute<T: Decodable & Sendable>(request: URLRequestConvertible) -> Task<T, Error>
 }
 
 public protocol NetworkServiceTrait: NetworkService { }
@@ -28,5 +28,19 @@ public extension NetworkServiceTrait {
             .validate()
             .serializingDecodable(decoder: decoder)
             .value
+    }
+    
+    func execute<T: Decodable & Sendable>(request: URLRequestConvertible) -> Task<T, Error> {
+        let dataTask = AF
+            .request(request)
+            .cURLDescription {
+                print("CURL \($0)")
+            }
+            .validate()
+            .serializingDecodable(T.self, decoder: decoder)
+        
+        return Task {
+            try await dataTask.value
+        }
     }
 }

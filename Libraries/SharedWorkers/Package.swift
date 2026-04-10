@@ -17,14 +17,15 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../SharedModels")
+        .package(path: "../SharedModels"),
+        .package(path: "../SharedNetwork")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "SharedWorkers",
-            dependencies: ["SharedModels"]
+            dependencies: ["SharedModels", "SharedNetwork"]
         ),
         .testTarget(
             name: "SharedWorkersTests",

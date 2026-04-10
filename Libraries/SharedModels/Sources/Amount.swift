@@ -5,7 +5,7 @@
 //  Created by Илья Бочков on 11.03.26.
 //
 
-public struct Amount: Equatable, Hashable, Codable {
+public struct Amount: Equatable, Hashable, Codable, Sendable {
     public let value: Double
     public let currency: Currency
     

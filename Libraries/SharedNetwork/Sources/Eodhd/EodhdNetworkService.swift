@@ -8,12 +8,12 @@
 import Alamofire
 import Foundation
 
-public protocol EodhdNetworkServiceProtocol: NetworkService {
+public protocol EodhdNetworkServiceProtocol: Sendable, NetworkService {
     func searchAssets(for query: String) async throws -> [EodhdAsset]
     func assetPrices(
         for ticker: String, exchange: String, fromDate: Date, toDate: Date
     ) async throws -> [EodhdAssetDayPrice]
-    func realTimeAssetPrice(for ticker: String, exchange: String) async throws -> EodhdRealtimeAssetPrice
+    func realTimeAssetPriceTask(for ticker: String, exchange: String) -> Task<EodhdRealtimeAssetPrice, Error>
 }
 
 public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkServiceProtocol {
@@ -31,7 +31,7 @@ public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkService
     }
     
     public func searchAssets(for query: String) async throws -> [EodhdAsset] {
-        try await execute(request: EodhdEndpoint.searchAssets(query: query))
+        try await execute(request: EodhdEndpoint.searchAssets(query: query)).value
     }
     
     public func assetPrices(
@@ -42,10 +42,10 @@ public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkService
         
         return try await execute(
             request: EodhdEndpoint.assetPrices(ticker: ticker, exchange: exchange, from: from, to: to)
-        )
+        ).value
     }
     
-    public func realTimeAssetPrice(for ticker: String, exchange: String) async throws -> EodhdRealtimeAssetPrice {
+    public func realTimeAssetPriceTask(for ticker: String, exchange: String) -> Task<EodhdRealtimeAssetPrice, Error> {
         try await execute(
             request: EodhdEndpoint.realtimeAssetPrice(ticker: ticker, exchange: exchange)
         )
