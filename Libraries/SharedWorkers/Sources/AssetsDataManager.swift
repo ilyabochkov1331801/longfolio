@@ -12,9 +12,6 @@ import SwiftData
 public protocol ManagesAssetsData {
     func fetchAsset(for ticker: AssetTicker) throws -> Asset?
     func saveAsset(_ asset: Asset) throws -> Asset
-    
-    func fetchAssetPrice(for asset: AssetTicker) throws -> RealtimeAssetPrice?
-    func saveAssetPrice(_ price: RealtimeAssetPrice) throws -> RealtimeAssetPrice
 }
 
 public final class AssetsDataManager: ManagesAssetsData {
@@ -63,31 +60,6 @@ public final class AssetsDataManager: ManagesAssetsData {
 
         try dataBase.save()
         return asset
-    }
-    
-    public func fetchAssetPrice(for ticker: AssetTicker) throws -> RealtimeAssetPrice? {
-        let tickerCode = ticker.ticker
-        let descriptor = FetchDescriptor<RealtimeAssetPriceEntity>(
-            predicate: #Predicate {
-                $0.ticker.ticker == tickerCode
-            }
-        )
-
-        return try dataBase.fetch(descriptor: descriptor).first.map(mapper.makeRealtimeAssetPrice)
-    }
-    
-    public func saveAssetPrice(_ price: RealtimeAssetPrice) throws -> RealtimeAssetPrice {
-        if let existingAsset = try fetchAssetPrice(for: price.ticker) {
-            return existingAsset
-        }
-        
-        let exchange = try fetchOrCreateExchange(from: price.ticker.exchange)
-        let ticker = try fetchOrCreateTicker(from: price.ticker, exchange: exchange)
-        let priceEntity = RealtimeAssetPriceEntity(ticker: ticker, close: price.close)
-        dataBase.insert(entity: priceEntity)
-
-        try dataBase.save()
-        return price
     }
 
     private func fetchOrCreateExchange(from exchange: Exchange) throws -> ExchangeEntity {
