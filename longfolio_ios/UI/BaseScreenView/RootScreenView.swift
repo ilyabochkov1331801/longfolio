@@ -7,20 +7,17 @@
 
 import SwiftUI
 
-struct RootScreenView<ContentView: View, ScreenModel: Equatable, ScreenRouter: RootRouter, RouteView: View>: View {
+struct RootScreenView<ContentView: View, ScreenRouter: RootRouter, RouteView: View>: View {
     @ObservedObject private var router: ScreenRouter
-    @Binding private var state: ScreenViewState<ScreenModel>
     
-    private let viewBuilder: (ScreenModel) -> ContentView
+    private let viewBuilder: () -> ContentView
     private let navigation: (ScreenRouter.Route) -> RouteView
     
     init(
-        state: Binding<ScreenViewState<ScreenModel>>,
         router: ScreenRouter,
-        @ViewBuilder viewBuilder: @escaping (ScreenModel) -> ContentView,
+        @ViewBuilder viewBuilder: @escaping () -> ContentView,
         @ViewBuilder navigation: @escaping (ScreenRouter.Route) -> RouteView
     ) {
-        self._state = state
         self.router = router
         self.viewBuilder = viewBuilder
         self.navigation = navigation
@@ -28,35 +25,19 @@ struct RootScreenView<ContentView: View, ScreenModel: Equatable, ScreenRouter: R
     
     var body: some View {
         NavigationStack(path: $router.navigationPath) {
-            ViewWrapper {
-                switch state {
-                case .loading:
-                    ProgressView()
-                case .error(let error):
-                    Text(error.localizedDescription)
-                case .normal(let model):
-                    viewBuilder(model)
-                case .overlayLoading(let model):
-                    viewBuilder(model)
-                        .disabled(true)
-                        .overlay { ProgressView() }
-                }
-            }
-            .animation(.default, value: state)
-            .navigationDestination(for: ScreenRouter.Route.self, destination: navigation)
-            .sheet(item: $router.modalNavigationPath, content: navigation)
+            viewBuilder()
+                .navigationDestination(for: ScreenRouter.Route.self, destination: navigation)
+                .sheet(item: $router.modalNavigationPath, content: navigation)
         }
     }
 }
 
 extension RootScreenView where ScreenRouter.Route == EmptyRoute, RouteView == EmptyView {
     init(
-        state: Binding<ScreenViewState<ScreenModel>>,
         router: ScreenRouter,
-        @ViewBuilder viewBuilder: @escaping (ScreenModel) -> ContentView,
+        @ViewBuilder viewBuilder: @escaping () -> ContentView
     ) {
         self.init(
-            state: state,
             router: router,
             viewBuilder: viewBuilder,
             navigation: { _ in }

@@ -13,16 +13,13 @@ struct CreateAssetTransactionDetailsScreenView: View {
     @StateObject var router: CreateAssetTransactionDetailsScreenRouter
 
     var body: some View {
-        BaseScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
+        BaseScreenView(router: router) {
             Form {
                 Section("Asset") {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(screenModel.asset.ticker.ticker)
+                        Text(viewModel.asset.ticker.ticker)
                             .font(.headline)
-                        Text(screenModel.asset.ticker.exchange.code)
+                        Text(viewModel.asset.ticker.exchange.code)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -31,10 +28,7 @@ struct CreateAssetTransactionDetailsScreenView: View {
                 Section("Transaction") {
                     Picker(
                         "Type",
-                        selection: Binding(
-                            get: { screenModel.type },
-                            set: { viewModel.updateType($0, model: screenModel) }
-                        )
+                        selection: $viewModel.type
                     ) {
                         Text("Buy").tag(AssetTransactionType.buy)
                         Text("Sell").tag(AssetTransactionType.sell)
@@ -42,18 +36,12 @@ struct CreateAssetTransactionDetailsScreenView: View {
 
                     DatePicker(
                         "Date",
-                        selection: Binding(
-                            get: { screenModel.date },
-                            set: { viewModel.updateDate($0, model: screenModel) }
-                        ),
+                        selection: $viewModel.date,
                         displayedComponents: .date
                     )
 
                     TextInput(
-                        output: Binding(
-                            get: { screenModel.amount },
-                            set: { viewModel.updateAmount($0, model: screenModel) }
-                        ),
+                        output: $viewModel.amount,
                         configuration: .init(
                             title: "Amount",
                             placeholder: "Enter amount",
@@ -64,10 +52,7 @@ struct CreateAssetTransactionDetailsScreenView: View {
                     )
 
                     TextInput(
-                        output: Binding(
-                            get: { screenModel.quantity },
-                            set: { viewModel.updateQuantity($0, model: screenModel) }
-                        ),
+                        output: $viewModel.quantity,
                         configuration: .init(
                             title: "Quantity",
                             placeholder: "Enter quantity",
@@ -82,13 +67,26 @@ struct CreateAssetTransactionDetailsScreenView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        if viewModel.createTransaction(model: screenModel) {
+                        if viewModel.createTransaction() {
                             router.dismiss()
                         }
                     }
-                    .disabled(!screenModel.canSave)
+                    .disabled(!viewModel.canSave)
                 }
             }
+            .alert(
+                "Something went wrong",
+                isPresented: Binding(
+                    get: { viewModel.error != nil },
+                    set: { isPresented in if !isPresented { viewModel.error = nil } }
+                ),
+                actions: {
+                    Button("OK", role: .cancel) { viewModel.error = nil }
+                },
+                message: {
+                    Text(viewModel.error ?? "")
+                }
+            )
         }
     }
 }

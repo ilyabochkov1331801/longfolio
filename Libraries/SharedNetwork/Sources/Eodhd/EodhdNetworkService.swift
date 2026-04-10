@@ -13,6 +13,7 @@ public protocol EodhdNetworkServiceProtocol: NetworkService {
     func assetPrices(
         for ticker: String, exchange: String, fromDate: Date, toDate: Date
     ) async throws -> [EodhdAssetDayPrice]
+    func realTimeAssetPrice(for ticker: String, exchange: String) async throws -> EodhdRealtimeAssetPrice
 }
 
 public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkServiceProtocol {
@@ -41,6 +42,12 @@ public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkService
         
         return try await execute(
             request: EodhdEndpoint.assetPrices(ticker: ticker, exchange: exchange, from: from, to: to)
+        )
+    }
+    
+    public func realTimeAssetPrice(for ticker: String, exchange: String) async throws -> EodhdRealtimeAssetPrice {
+        try await execute(
+            request: EodhdEndpoint.realtimeAssetPrice(ticker: ticker, exchange: exchange)
         )
     }
 }

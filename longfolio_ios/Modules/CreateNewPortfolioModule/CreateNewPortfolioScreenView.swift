@@ -12,18 +12,12 @@ struct CreateNewPortfolioScreenView: View {
     @StateObject var router: CreateNewPortfolioScreenRouter
 
     var body: some View {
-        RootScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
+        RootScreenView(router: router) {
             Form {
                 Section("Portfolio") {
                     TextField(
                         "Name",
-                        text: Binding(
-                            get: { screenModel.portfolioName },
-                            set: { viewModel.updatePortfolioName($0) }
-                        )
+                        text: $viewModel.portfolioName
                     )
                     .textInputAutocapitalization(.words)
                 }
@@ -38,12 +32,25 @@ struct CreateNewPortfolioScreenView: View {
                 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        viewModel.createPorftolio(with: screenModel.portfolioName)
+                        viewModel.createPorftolio()
                         router.dismiss()
                     }
-                    .disabled(!screenModel.canSave)
+                    .disabled(!viewModel.canSave)
                 }
             }
+            .alert(
+                "Something went wrong",
+                isPresented: Binding(
+                    get: { viewModel.error != nil },
+                    set: { isPresented in if !isPresented { viewModel.error = nil } }
+                ),
+                actions: {
+                    Button("OK", role: .cancel) { viewModel.error = nil }
+                },
+                message: {
+                    Text(viewModel.error ?? "")
+                }
+            )
         }
     }
 }

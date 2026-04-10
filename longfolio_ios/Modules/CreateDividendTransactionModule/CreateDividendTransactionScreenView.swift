@@ -13,34 +13,28 @@ struct CreateDividendTransactionScreenView: View {
     @StateObject var router: CreateDividendTransactionScreenRouter
 
     var body: some View {
-        RootScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
+        RootScreenView(router: router) {
             Form {
                 Section("Transaction") {
-                    if screenModel.positions.isEmpty {
+                    if viewModel.positions.isEmpty {
                         Text("No positions available for dividends")
                             .foregroundStyle(.secondary)
                     } else {
                         Picker(
                             "Ticker",
                             selection: Binding(
-                                get: { screenModel.selectedTicker ?? screenModel.positions.first!.ticker },
-                                set: { viewModel.updateTicker($0, with: screenModel) }
+                                get: { viewModel.selectedTicker ?? viewModel.positions.first!.ticker },
+                                set: { viewModel.selectedTicker = $0 }
                             )
                         ) {
-                            ForEach(screenModel.positions, id: \.ticker) { position in
+                            ForEach(viewModel.positions, id: \.ticker) { position in
                                 Text(position.ticker.ticker).tag(position.ticker)
                             }
                         }
                     }
 
                     TextInput(
-                        output: Binding(
-                            get: { screenModel.amountValue },
-                            set: { viewModel.updateAmountValue($0, with: screenModel) }
-                        ),
+                        output: $viewModel.amountValue,
                         configuration: .init(
                             title: "Amount",
                             placeholder: "Enter amount",
@@ -52,10 +46,7 @@ struct CreateDividendTransactionScreenView: View {
 
                     DatePicker(
                         "Date",
-                        selection: Binding(
-                            get: { screenModel.date },
-                            set: { viewModel.updateDate($0, with: screenModel) }
-                        ),
+                        selection: $viewModel.date,
                         displayedComponents: .date
                     )
                 }
@@ -70,13 +61,26 @@ struct CreateDividendTransactionScreenView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        if viewModel.createDividendTransaction(with: screenModel) {
+                        if viewModel.createDividendTransaction() {
                             router.dismiss()
                         }
                     }
-                    .disabled(!screenModel.canSave)
+                    .disabled(!viewModel.canSave)
                 }
             }
+            .alert(
+                "Something went wrong",
+                isPresented: Binding(
+                    get: { viewModel.error != nil },
+                    set: { isPresented in if !isPresented { viewModel.error = nil } }
+                ),
+                actions: {
+                    Button("OK", role: .cancel) { viewModel.error = nil }
+                },
+                message: {
+                    Text(viewModel.error ?? "")
+                }
+            )
         }
     }
 }

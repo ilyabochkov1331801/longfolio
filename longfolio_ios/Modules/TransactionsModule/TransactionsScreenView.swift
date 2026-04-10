@@ -13,35 +13,33 @@ struct TransactionsScreenView: View {
     @StateObject var router: TransactionsScreenRouter
 
     var body: some View {
-        BaseScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
-            content(screenModel)
-                .navigationTitle("Transactions")
+        BaseScreenView(router: router) {
+            screenContent
         }
         .task {
             viewModel.loadTransactions()
         }
     }
 
-    private func content(_ screenModel: TransactionsScreenModel) -> some View {
+    @ViewBuilder
+    private var screenContent: some View {
         List {
-            cashTransactionsSection(screenModel)
-            assetTransactionsSection(screenModel)
-            dividendTransactionsSection(screenModel)
+            cashTransactionsSection
+            assetTransactionsSection
+            dividendTransactionsSection
         }
         .listStyle(.plain)
+        .navigationTitle("Transactions")
     }
 
     @ViewBuilder
-    private func cashTransactionsSection(_ screenModel: TransactionsScreenModel) -> some View {
+    private var cashTransactionsSection: some View {
         Section("Cash Transactions") {
-            if screenModel.portfolio.cashTransactions.isEmpty {
+            if viewModel.portfolio.cashTransactions.isEmpty {
                 Text("No cash transactions yet")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(screenModel.portfolio.cashTransactions, id: \.id) { transaction in
+                ForEach(viewModel.portfolio.cashTransactions, id: \.id) { transaction in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(transaction.amount.currency.rawValue.uppercased())
@@ -62,13 +60,13 @@ struct TransactionsScreenView: View {
     }
 
     @ViewBuilder
-    private func assetTransactionsSection(_ screenModel: TransactionsScreenModel) -> some View {
+    private var assetTransactionsSection: some View {
         Section("Asset Transactions") {
-            if screenModel.portfolio.assetsTransactions.isEmpty {
+            if viewModel.portfolio.assetsTransactions.isEmpty {
                 Text("No asset transactions yet")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(screenModel.portfolio.assetsTransactions, id: \.id) { transaction in
+                ForEach(viewModel.portfolio.assetsTransactions, id: \.id) { transaction in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(String(describing: transaction.type).capitalized)
@@ -89,13 +87,13 @@ struct TransactionsScreenView: View {
     }
 
     @ViewBuilder
-    private func dividendTransactionsSection(_ screenModel: TransactionsScreenModel) -> some View {
+    private var dividendTransactionsSection: some View {
         Section("Dividend Transactions") {
-            if screenModel.portfolio.dividendsTransactions.isEmpty {
+            if viewModel.portfolio.dividendsTransactions.isEmpty {
                 Text("No dividend transactions yet")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(screenModel.portfolio.dividendsTransactions, id: \.id) { transaction in
+                ForEach(viewModel.portfolio.dividendsTransactions, id: \.id) { transaction in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(transaction.asset.ticker)

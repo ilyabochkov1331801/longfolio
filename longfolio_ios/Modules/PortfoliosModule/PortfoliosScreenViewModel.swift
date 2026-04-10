@@ -10,16 +10,14 @@ import Combine
 import SharedModels
 import SharedWorkers
 
-struct PortfoliosScreenModel: Equatable {
-    let portfolios: [Portfolio]
-}
-
 @Observable
 final class PortfoliosScreenViewModel {
-    var state: ScreenViewState<PortfoliosScreenModel> = .loading
     private let portfolioDataManager: ManagesPortfolioData
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []
+    
+    var portfolios: [Portfolio] = []
+    var error: String?
 
     init(dependencyContainer: DIContainer) {
         self.contextManager = dependencyContainer.contextManager
@@ -41,10 +39,9 @@ extension PortfoliosScreenViewModel {
 
     func loadPortfolios() {
         do {
-            let portfolios = try portfolioDataManager.fetchPortfolios()
-            state = .normal(PortfoliosScreenModel(portfolios: portfolios))
+            portfolios = try portfolioDataManager.fetchPortfolios()
         } catch {
-            state = .error(error)
+            self.error = error.localizedDescription
         }
     }
 
@@ -52,7 +49,7 @@ extension PortfoliosScreenViewModel {
         do {
             try portfolioDataManager.deletePortfolio(with: name)
         } catch {
-            state = .error(error)
+            
         }
     }
 }

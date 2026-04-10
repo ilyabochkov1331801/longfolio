@@ -8,18 +8,16 @@
 import Foundation
 import SharedWorkers
 
-struct CreateNewPortfolioScreenModel: Equatable {
-    let portfolioName: String
-    let canSave: Bool
-}
-
 @Observable
 final class CreateNewPortfolioScreenViewModel {
-    var state: ScreenViewState<CreateNewPortfolioScreenModel> = .normal(
-        CreateNewPortfolioScreenModel(portfolioName: "", canSave: false)
-    )
-
     private let portfolioDataManager: ManagesPortfolioData
+
+    var portfolioName = ""
+    var error: String?
+
+    var canSave: Bool {
+        portfolioName.count > 3
+    }
 
     init(dependencyContainer: DIContainer) {
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
@@ -29,17 +27,11 @@ final class CreateNewPortfolioScreenViewModel {
 
 @MainActor
 extension CreateNewPortfolioScreenViewModel {
-    func updatePortfolioName(_ name: String) {
-        state = .normal(
-            CreateNewPortfolioScreenModel(portfolioName: name, canSave: name.count > 3)
-        )
-    }
-
-    func createPorftolio(with name: String)  {
+    func createPorftolio() {
         do {
-            try portfolioDataManager.createNewPortfolio(with: name)
+            try portfolioDataManager.createNewPortfolio(with: portfolioName)
         } catch {
-            state = .error(error)
+            self.error = error.localizedDescription
         }
     }
 }

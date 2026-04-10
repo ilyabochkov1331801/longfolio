@@ -13,28 +13,19 @@ struct CreateCashTransactionScreenView: View {
     @StateObject var router: CreateCashTransactionScreenRouter
 
     var body: some View {
-        RootScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
+        RootScreenView(router: router) {
             Form {
                 Section("Transaction") {
                     Picker(
                         "Currency",
-                        selection: Binding(
-                            get: { screenModel.selectedCurrency },
-                            set: { viewModel.updateCurrency($0, with: screenModel) }
-                        )
+                        selection: $viewModel.selectedCurrency
                     ) {
                         Text("USD").tag(Currency.usd)
                         Text("EUR").tag(Currency.eur)
                     }
 
                     TextInput(
-                        output: Binding(
-                            get: { screenModel.amountValue },
-                            set: { viewModel.updateAmountValue($0, with: screenModel) }
-                        ),
+                        output: $viewModel.amountValue,
                         configuration: .init(
                             title: "Amount",
                             placeholder: "Enter amount",
@@ -46,10 +37,7 @@ struct CreateCashTransactionScreenView: View {
 
                     DatePicker(
                         "Date",
-                        selection: Binding(
-                            get: { screenModel.date },
-                            set: { viewModel.updateDate($0, with: screenModel) }
-                        ),
+                        selection: $viewModel.date,
                         displayedComponents: .date
                     )
                 }
@@ -64,13 +52,26 @@ struct CreateCashTransactionScreenView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        if viewModel.createCashTransaction(with: screenModel) {
+                        if viewModel.createCashTransaction() {
                             router.dismiss()
                         }
                     }
-                    .disabled(!screenModel.canSave)
+                    .disabled(!viewModel.canSave)
                 }
             }
+            .alert(
+                "Something went wrong",
+                isPresented: Binding(
+                    get: { viewModel.error != nil },
+                    set: { isPresented in if !isPresented { viewModel.error = nil } }
+                ),
+                actions: {
+                    Button("OK", role: .cancel) { viewModel.error = nil }
+                },
+                message: {
+                    Text(viewModel.error ?? "")
+                }
+            )
         }
     }
 }

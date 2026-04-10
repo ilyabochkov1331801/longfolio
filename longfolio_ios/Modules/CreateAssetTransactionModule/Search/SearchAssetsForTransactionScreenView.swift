@@ -14,19 +14,8 @@ struct SearchAssetsForTransactionScreenView: View {
     @StateObject var router: SearchAssetsForTransactionScreenRouter
 
     var body: some View {
-        RootScreenView(
-            state: $viewModel.state,
-            router: router
-        ) { screenModel in
-            content(screenModel)
-                .navigationTitle("Select Asset")
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
-                            router.dismiss()
-                        }
-                    }
-                }
+        RootScreenView(router: router) {
+            screenContent
         } navigation: { route in
             switch route {
             case let .createWithAsset(asset):
@@ -43,17 +32,17 @@ struct SearchAssetsForTransactionScreenView: View {
     }
 
     @ViewBuilder
-    private func content(_ screenModel: SearchAssetsForTransactionScreenModel) -> some View {
+    private var screenContent: some View {
         List {
-            if screenModel.displayedAssets.isEmpty {
+            if viewModel.displayedAssets.isEmpty {
                 ContentUnavailableView(
                     "No assets found",
                     systemImage: "magnifyingglass",
-                    description: Text(emptyStateDescription(for: screenModel))
+                    description: Text(viewModel.emptyStateDescription())
                 )
                 .listRowSeparator(.hidden)
             } else {
-                ForEach(screenModel.displayedAssets, id: \.self) { asset in
+                ForEach(viewModel.displayedAssets, id: \.self) { asset in
                     Button {
                         router.navigate(to: .createWithAsset(asset))
                     } label: {
@@ -84,13 +73,26 @@ struct SearchAssetsForTransactionScreenView: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: "Search asset or exchange"
         )
-    }
-
-    private func emptyStateDescription(for screenModel: SearchAssetsForTransactionScreenModel) -> String {
-        if screenModel.searchQuery.isEmpty {
-            return "Assets from the portfolio will appear here."
+        .navigationTitle("Select Asset")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Close") {
+                    router.dismiss()
+                }
+            }
         }
-
-        return "Try another ticker or exchange."
+        .alert(
+            "Something went wrong",
+            isPresented: Binding(
+                get: { viewModel.error != nil },
+                set: { isPresented in if !isPresented { viewModel.error = nil } }
+            ),
+            actions: {
+                Button("OK", role: .cancel) { viewModel.error = nil }
+            },
+            message: {
+                Text(viewModel.error ?? "")
+            }
+        )
     }
 }
