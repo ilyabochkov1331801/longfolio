@@ -96,7 +96,7 @@ struct TransactionsScreenView: View {
                 ForEach(viewModel.portfolio.dividendsTransactions, id: \.id) { transaction in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(transaction.asset.ticker)
+                            Text(transaction.asset.ticker.ticker)
                                 .font(.headline)
                             Text(transaction.date, style: .date)
                                 .font(.caption)

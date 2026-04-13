@@ -9,14 +9,17 @@ import Foundation
 import Combine
 import SharedModels
 import SharedWorkers
+import Observation
 
 @Observable
 final class PortfolioDetailsScreenViewModel {
     private let portfolioName: String
     private let portfolioDataManager: ManagesPortfolioData
+    private let realtimeAssetPriceProvider: ProvidesRealtimeAssetPrices
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []
-
+    
+    var portfolioPrices: [Currency: Double] = [:]
     var portfolio: Portfolio
     var error: String?
 
@@ -25,6 +28,7 @@ final class PortfolioDetailsScreenViewModel {
         self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
+        self.realtimeAssetPriceProvider = RealtimePriceProvider(eodhdNetworkService: dependencyContainer.eodhdNetworkService)
         self.portfolio = portfolio
         setupBindings()
     }
@@ -35,19 +39,29 @@ extension PortfolioDetailsScreenViewModel {
     func setupBindings() {
         contextManager.updatesPublisher
             .sink { [weak self] _ in
-                self?.loadPortfolio()
+                Task { await self?.loadPortfolio() }
             }
             .store(in: &cancelBag)
     }
 
-    func loadPortfolio() {
+    func loadPortfolio() async {
         do {
             guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolioName) else {
                 return
             }
 
             self.portfolio = portfolio
+            await loadPortfolioPrice()
             error = nil
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+    
+    func loadPortfolioPrice() async {
+        do {
+            let prices = try await realtimeAssetPriceProvider.currentPrice(for: portfolio)
+            self.portfolioPrices = prices
         } catch {
             self.error = error.localizedDescription
         }

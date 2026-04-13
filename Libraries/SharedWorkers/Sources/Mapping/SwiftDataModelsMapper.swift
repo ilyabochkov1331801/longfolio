@@ -23,7 +23,7 @@ final class SwiftDataModelsMapper {
 
     func makeAsset(from entity: AssetEntity) -> Asset {
         Asset(
-            ticker: makeAssetTicker(from: entity.ticker),
+            ticker: AssetTicker(ticker: entity.ticker, exchange: makeExchange(from: entity.exchange)),
             currency: entity.currency,
             priceHistory: entity.priceHistory.map(makeAssetDayPrice)
         )
@@ -51,14 +51,14 @@ final class SwiftDataModelsMapper {
         DividendTransaction(
             id: entity.id,
             date: entity.date,
-            asset: makeAssetTicker(from: entity.ticker),
+            asset: makeAsset(from: entity.asset),
             amount: entity.amount
         )
     }
 
     func makePosition(from entity: PositionEntity) -> Position {
         Position(
-            ticker: makeAssetTicker(from: entity.ticker),
+            asset: makeAsset(from: entity.asset),
             quantity: entity.quantity,
             averageOpenPrice: entity.averageOpenPrice
         )
@@ -75,16 +75,9 @@ final class SwiftDataModelsMapper {
 
     func makePositionSnapshot(from entity: PositionSnapshotEntity) -> PositionSnapshot {
         PositionSnapshot(
-            ticker: makeAssetTicker(from: entity.ticker),
+            ticker: entity.asset,
             quantity: entity.quantity,
             price: entity.price
-        )
-    }
-
-    func makeAssetTicker(from entity: AssetTickerEntity) -> AssetTicker {
-        AssetTicker(
-            ticker: entity.ticker,
-            exchange: makeExchange(from: entity.exchange)
         )
     }
 

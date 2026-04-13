@@ -44,7 +44,7 @@ extension CreateAssetTransactionDetailsScreenViewModel {
             let asset = try assetsDataManager.saveAsset(asset)
             try transactionsDataManager.createAssetTransaction(
                 for: portfolioName,
-                asset: asset.ticker,
+                asset: asset,
                 type: type,
                 quantity: quantity,
                 amount: Amount(value: amount, currency: asset.currency),

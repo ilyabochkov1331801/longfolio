@@ -10,10 +10,12 @@ import SharedModels
 import SharedNetwork
 
 public protocol ProvidesRealtimeAssetPrices {
-    func setCurrentPrice(for asset: Asset) async throws -> Asset
+    func currentPrice(for asset: Asset) async throws -> Amount
+    func currentPrice(for position: Position) async throws -> Amount
+    func currentPrice(for portfolio: Portfolio) async throws -> [Currency: Double]
 }
 
-public final class RealtimeAssetPriceProvider: ProvidesRealtimeAssetPrices {
+public final class RealtimePriceProvider: ProvidesRealtimeAssetPrices {
     private let eodhdNetworkService: EodhdNetworkServiceProtocol
     private let cache = PriceStore()
     
@@ -21,18 +23,18 @@ public final class RealtimeAssetPriceProvider: ProvidesRealtimeAssetPrices {
         self.eodhdNetworkService = eodhdNetworkService
     }
     
-    public func setCurrentPrice(for asset: Asset) async throws -> Asset {
+    public func currentPrice(for asset: Asset) async throws -> Amount {
         let ticker = asset.ticker
         let exchange = asset.ticker.exchange
         
         if let cached = await cache.get(for: ticker) {
-            return asset.with(currentPrice: cached)
+            return cached
         }
         
         if let pendingTask = await cache.getTask(for: ticker) {
             let result = try await pendingTask.value
             let amount = Amount(value: result.close, currency: asset.currency)
-            return asset.with(currentPrice: amount)
+            return amount
         }
 
         let task = eodhdNetworkService.realTimeAssetPriceTask(for: ticker.ticker, exchange: exchange.code)
@@ -41,7 +43,35 @@ public final class RealtimeAssetPriceProvider: ProvidesRealtimeAssetPrices {
         let amount = Amount(value: result.close, currency: asset.currency)
         await cache.set(amount, for: ticker)
         await cache.removeTask(for: ticker)
-        return asset.with(currentPrice: amount)
+        return amount
+    }
+    
+    public func currentPrice(for position: Position) async throws -> Amount {
+        let assetPrice = try await currentPrice(for: position.asset)
+        return Amount(value: assetPrice.value * position.quantity, currency: assetPrice.currency)
+    }
+    
+    public func currentPrice(for portfolio: Portfolio) async throws -> [Currency: Double] {
+        var result: [Currency: Double] = [:]
+        for position in portfolio.positions {
+            let positionPrice = try await currentPrice(for: position)
+            
+            if let price = result[positionPrice.currency] {
+                result[positionPrice.currency] = (price + positionPrice.value)
+            } else {
+                result[positionPrice.currency] = positionPrice.value
+            }
+        }
+        
+        for cashAmount in portfolio.cashAmount {
+            if let price = result[cashAmount.currency] {
+                result[cashAmount.currency] = (price + cashAmount.value)
+            } else {
+                result[cashAmount.currency] = cashAmount.value
+            }
+        }
+        
+        return result
     }
 }
 

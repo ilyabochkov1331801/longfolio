@@ -42,7 +42,7 @@ struct PortfolioDetailsScreenView: View {
             }
         }
         .task {
-            viewModel.loadPortfolio()
+            await viewModel.loadPortfolio()
         }
     }
 
@@ -50,8 +50,20 @@ struct PortfolioDetailsScreenView: View {
     private var screenContent: some View {
         List {
             Section("Portfolio") {
-                Text(viewModel.portfolio.name)
-                    .font(.headline)
+                HStack {
+                    Text(viewModel.portfolio.name)
+                        .font(.headline)
+
+                    Spacer()
+
+                    VStack {
+                        ForEach(viewModel.portfolioPrices.sorted(by: { $0.key.rawValue < $1.key.rawValue }), id: \.key) { element in
+                            AmountView(amount: element.value, currency: element.key)
+                        }
+                    }
+                    
+                }
+
             }
 
             Section("Cash Balance") {
@@ -78,10 +90,10 @@ struct PortfolioDetailsScreenView: View {
                     Text("No positions yet")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(viewModel.portfolio.positions, id: \.ticker) { position in
+                    ForEach(viewModel.portfolio.positions, id: \.asset) { position in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text(position.ticker.ticker)
+                                Text(position.asset.ticker.ticker)
                                     .font(.headline)
 
                                 Spacer()
@@ -91,7 +103,7 @@ struct PortfolioDetailsScreenView: View {
                             }
 
                             HStack {
-                                Text(position.ticker.exchange.code)
+                                Text(position.asset.ticker.exchange.code)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
 
@@ -148,3 +160,4 @@ struct PortfolioDetailsScreenView: View {
         }
     }
 }
+
