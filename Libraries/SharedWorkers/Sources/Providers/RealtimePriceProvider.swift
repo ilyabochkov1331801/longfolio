@@ -12,9 +12,10 @@ import SharedNetwork
 public protocol ProvidesRealtimeAssetPrices {
     func currentPrice(for asset: Asset) async throws -> Amount
     func currentPrice(for position: Position) async throws -> Amount
-    func currentPrice(for portfolio: Portfolio) async throws -> [Currency: Double]
+    func currentPrice(for portfolio: Portfolio) async throws -> [Amount]
 }
 
+@MainActor
 public final class RealtimePriceProvider: ProvidesRealtimeAssetPrices {
     private let eodhdNetworkService: EodhdNetworkServiceProtocol
     private let cache = PriceStore()
@@ -51,27 +52,29 @@ public final class RealtimePriceProvider: ProvidesRealtimeAssetPrices {
         return Amount(value: assetPrice.value * position.quantity, currency: assetPrice.currency)
     }
     
-    public func currentPrice(for portfolio: Portfolio) async throws -> [Currency: Double] {
-        var result: [Currency: Double] = [:]
-        for position in portfolio.positions {
-            let positionPrice = try await currentPrice(for: position)
+    public func currentPrice(for portfolio: Portfolio) async throws -> [Amount] {
+        let positionPrices = try await withThrowingTaskGroup(of: Amount.self) { group in
+            for position in portfolio.positions {
+                group.addTask { 
+                    try await self.currentPrice(for: position)
+                }
+            }
             
-            if let price = result[positionPrice.currency] {
-                result[positionPrice.currency] = (price + positionPrice.value)
-            } else {
-                result[positionPrice.currency] = positionPrice.value
+            var responses: [Amount] = []
+            for try await result in group {
+                responses.append(result)
             }
+            return responses
         }
         
-        for cashAmount in portfolio.cashAmount {
-            if let price = result[cashAmount.currency] {
-                result[cashAmount.currency] = (price + cashAmount.value)
-            } else {
-                result[cashAmount.currency] = cashAmount.value
-            }
-        }
-        
-        return result
+        return Array(
+            (positionPrices + portfolio.cashAmount).reduce(into: [Currency: Amount]()) { result, element in
+                result[element.currency] = Amount(
+                    value: (result[element.currency]?.value ?? 0) + element.value,
+                    currency: element.currency
+                )
+            }.values
+        )
     }
 }
 

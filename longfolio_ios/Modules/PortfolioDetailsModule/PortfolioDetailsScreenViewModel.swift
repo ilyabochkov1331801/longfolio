@@ -19,7 +19,7 @@ final class PortfolioDetailsScreenViewModel {
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []
     
-    var portfolioPrices: [Currency: Double] = [:]
+    var portfolioPrice: [Amount] = []
     var portfolio: Portfolio
     var error: String?
 
@@ -60,8 +60,7 @@ extension PortfolioDetailsScreenViewModel {
     
     func loadPortfolioPrice() async {
         do {
-            let prices = try await realtimeAssetPriceProvider.currentPrice(for: portfolio)
-            self.portfolioPrices = prices
+            portfolioPrice = try await realtimeAssetPriceProvider.currentPrice(for: portfolio)
         } catch {
             self.error = error.localizedDescription
         }

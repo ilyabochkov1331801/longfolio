@@ -45,7 +45,8 @@ public final class AssetsDataManager: ManagesAssetsData {
             priceHistory: [],
             ticker: asset.ticker.ticker,
             currency: asset.currency,
-            exchange: exchange
+            exchange: exchange,
+            positions: []
         )
         dataBase.insert(entity: assetEntity)
 

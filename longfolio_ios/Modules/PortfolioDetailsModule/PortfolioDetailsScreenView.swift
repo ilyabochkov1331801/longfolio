@@ -57,11 +57,15 @@ struct PortfolioDetailsScreenView: View {
                     Spacer()
 
                     VStack {
-                        ForEach(viewModel.portfolioPrices.sorted(by: { $0.key.rawValue < $1.key.rawValue }), id: \.key) { element in
-                            AmountView(amount: element.value, currency: element.key)
+                        ForEach(viewModel.portfolioPrice, id: \.currency) { element in
+                            AmountView(amount: element.value, currency: element.currency)
                         }
                     }
-                    
+                    .overlay {
+                        if viewModel.portfolioPrice.isEmpty {
+                            ProgressView()
+                        }
+                    }
                 }
 
             }

@@ -19,13 +19,20 @@ final class AssetEntity {
     var priceHistory: [AssetDayPriceEntity]
     
     @Relationship(deleteRule: .cascade, inverse: \PositionEntity.asset)
-    var position: PositionEntity?
+    var positions: [PositionEntity]
 
-    init(priceHistory: [AssetDayPriceEntity], ticker: String, currency: Currency, exchange: ExchangeEntity) {
+    init(
+        priceHistory: [AssetDayPriceEntity],
+        ticker: String,
+        currency: Currency,
+        exchange: ExchangeEntity,
+        positions: [PositionEntity]
+    ) {
         self.priceHistory = priceHistory
         self.ticker = ticker
         self.currency = currency
         self.exchange = exchange
+        self.positions = positions
     }
 }
 

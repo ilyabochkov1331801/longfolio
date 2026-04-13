@@ -15,6 +15,7 @@ public protocol ManagesTransactionsData {
         amount: Amount,
         date: Date
     ) throws
+    
     func createDividendTransaction(
         for portfolioName: String,
         asset: Asset,
@@ -22,6 +23,7 @@ public protocol ManagesTransactionsData {
         amount: Amount,
         date: Date
     ) throws
+    
     func createAssetTransaction(
         for portfolioName: String,
         asset: Asset,
@@ -69,6 +71,7 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         portfolio.cashTransactions.append(transaction)
 
         dataBase.insert(entity: transaction)
+
         try dataBase.save()
     }
 
@@ -210,12 +213,17 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         }
 
         let exchange = try fetchOrCreateExchange(from: asset.ticker.exchange)
-        let assetEntity = AssetEntity(priceHistory: [], ticker: assetTicker, currency: asset.currency, exchange: exchange)
+        let assetEntity = AssetEntity(
+            priceHistory: [],
+            ticker: assetTicker,
+            currency: asset.currency,
+            exchange: exchange,
+            positions: []
+        )
         let priceHistory = asset.priceHistory.map { dayPrice in
             AssetDayPriceEntity(date: dayPrice.date, price: dayPrice.price, asset: assetEntity)
         }
         assetEntity.priceHistory = priceHistory
-        assetEntity.position = nil
 
         dataBase.insert(entity: assetEntity)
         return assetEntity
@@ -258,7 +266,9 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             ),
             portfolio: portfolio
         )
-        asset.position = newPosition
+        asset.positions.append(newPosition)
+        portfolio.positions.append(newPosition)
+        
         dataBase.insert(entity: newPosition)
     }
 }

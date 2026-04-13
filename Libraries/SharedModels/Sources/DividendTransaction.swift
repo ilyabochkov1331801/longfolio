@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct DividendTransaction: Equatable, Hashable  {
+public struct DividendTransaction: Equatable, Hashable, Sendable {
     public let id: String
     public let date: Date
     public let asset: Asset

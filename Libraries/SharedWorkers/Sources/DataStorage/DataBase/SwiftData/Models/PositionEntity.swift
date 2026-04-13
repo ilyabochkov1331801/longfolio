@@ -12,7 +12,6 @@ import SharedModels
 @Model
 final class PositionEntity {
     var asset: AssetEntity
-    
     var quantity: Double
     var averageOpenPrice: Amount
     var portfolio: PortfolioEntity

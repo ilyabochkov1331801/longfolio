@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Portfolio: Equatable, Hashable {
+public struct Portfolio: Equatable, Hashable, Sendable {
     public let name: String
     public let cashAmount: [Amount]
     public let assetsTransactions: [AssetTransaction]
