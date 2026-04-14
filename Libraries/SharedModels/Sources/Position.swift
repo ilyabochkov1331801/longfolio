@@ -8,11 +8,11 @@
 public struct Position: Equatable, Hashable, Sendable {
     public let asset: Asset
     public let quantity: Double
-    public let averageOpenPrice: Amount
+    public let openAmount: Amount
 
-    public init(asset: Asset, quantity: Double, averageOpenPrice: Amount) {
+    public init(asset: Asset, quantity: Double, openAmount: Amount) {
         self.asset = asset
         self.quantity = quantity
-        self.averageOpenPrice = averageOpenPrice
+        self.openAmount = openAmount
     }
 }

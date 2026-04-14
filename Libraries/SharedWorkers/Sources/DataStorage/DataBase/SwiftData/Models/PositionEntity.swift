@@ -13,18 +13,18 @@ import SharedModels
 final class PositionEntity {
     var asset: AssetEntity
     var quantity: Double
-    var averageOpenPrice: Amount
+    var openAmount: Amount
     var portfolio: PortfolioEntity
     
     init(
         asset: AssetEntity,
         quantity: Double,
-        averageOpenPrice: Amount,
+        openAmount: Amount,
         portfolio: PortfolioEntity
     ) {
         self.asset = asset
         self.quantity = quantity
-        self.averageOpenPrice = averageOpenPrice
+        self.openAmount = openAmount
         self.portfolio = portfolio
     }
 }

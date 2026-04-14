@@ -60,7 +60,7 @@ final class SwiftDataModelsMapper {
         Position(
             asset: makeAsset(from: entity.asset),
             quantity: entity.quantity,
-            averageOpenPrice: entity.averageOpenPrice
+            openAmount: entity.openAmount
         )
     }
 

@@ -56,19 +56,11 @@ struct PortfoliosScreenView: View {
                 Button {
                     router.navigate(to: .portfolioDetails(portfolio))
                 } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: "briefcase.fill")
-                            .foregroundStyle(.tint)
-
-                        Text(portfolio.name)
-                            .font(.headline)
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundStyle(.tertiary)
-                    }
+                    PortfolioPreviewView(
+                        portfolio: portfolio,
+                        portfolioAmount: viewModel.amounts[portfolio.name],
+                        profitAmount: viewModel.profits[portfolio.name]
+                    )
                 }
                 .buttonStyle(.plain)
                 .padding(.vertical, 4)
@@ -78,6 +70,25 @@ struct PortfoliosScreenView: View {
                     viewModel.deletePortfolio(with: viewModel.portfolios[index].name)
                 }
             }
+                        
+            HStack(alignment: .top) {
+                Text("Total")
+                    .font(.headline)
+                
+                Spacer()
+                
+                if let totalAmount = viewModel.totalAmount {
+                    VStack(alignment: .trailing) {
+                        ForEach(totalAmount, id: \.currency) { amount in
+                            AmountView(amount: amount)
+                        }
+                    }
+                } else {
+                    ProgressView()
+                        .padding()
+                }
+            }
+            .padding()
         }
         .listStyle(.plain)
         .overlay {

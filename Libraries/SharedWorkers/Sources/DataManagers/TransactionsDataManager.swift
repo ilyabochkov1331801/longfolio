@@ -34,6 +34,10 @@ public protocol ManagesTransactionsData {
     ) throws
 }
 
+public enum TransactionsErrors: Error {
+    case nothingToSell
+}
+
 public final class TransactionsDataManager: ManagesTransactionsData {
     private let dataBase: SwiftDataBaseProtocol
     private let assetsDataManager: ManagesAssetsData
@@ -241,29 +245,30 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         }) {
             switch type {
             case .buy:
-                let totalOpenAmount = position.averageOpenPrice.value * position.quantity + amount.value
-                let newQuantity = position.quantity + quantity
-                position.quantity = newQuantity
-                position.averageOpenPrice = Amount(
-                    value: newQuantity == 0 ? 0 : totalOpenAmount / newQuantity,
+                position.quantity = position.quantity + quantity
+                position.openAmount = Amount(
+                    value: position.openAmount.value + amount.value,
                     currency: amount.currency
                 )
-            case .sell:
+            case let .sell(profit):
                 position.quantity = max(0, position.quantity - quantity)
+                position.openAmount = Amount(
+                    value: max(0, position.openAmount.value - (amount.value - profit.value)),
+                    currency: amount.currency
+                )
             }
 
             return
         }
 
-        guard type == .buy else { return }
+        guard type == .buy else {
+            throw TransactionsErrors.nothingToSell
+        }
 
         let newPosition = PositionEntity(
             asset: asset,
             quantity: quantity,
-            averageOpenPrice: Amount(
-                value: quantity == 0 ? 0 : amount.value / quantity,
-                currency: amount.currency
-            ),
+            openAmount: amount,
             portfolio: portfolio
         )
         asset.positions.append(newPosition)

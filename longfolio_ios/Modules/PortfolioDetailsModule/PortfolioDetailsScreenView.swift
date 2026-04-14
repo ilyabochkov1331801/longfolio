@@ -56,18 +56,17 @@ struct PortfolioDetailsScreenView: View {
 
                     Spacer()
 
-                    VStack {
-                        ForEach(viewModel.portfolioPrice, id: \.currency) { element in
-                            AmountView(amount: element.value, currency: element.currency)
+                    if let totalAmount = viewModel.totalAmount {
+                        VStack(alignment: .trailing) {
+                            ForEach(totalAmount.sorted(), id: \.currency) { amount in
+                                AmountView(amount: amount)
+                            }
                         }
-                    }
-                    .overlay {
-                        if viewModel.portfolioPrice.isEmpty {
-                            ProgressView()
-                        }
+                    } else {
+                        ProgressView()
+                            .padding()
                     }
                 }
-
             }
 
             Section("Cash Balance") {
@@ -114,7 +113,7 @@ struct PortfolioDetailsScreenView: View {
                                 Spacer()
 
                                 Text(
-                                    position.averageOpenPrice.value,
+                                    position.openAmount.value,
                                     format: .number.precision(.fractionLength(2))
                                 )
                                 .font(.caption)

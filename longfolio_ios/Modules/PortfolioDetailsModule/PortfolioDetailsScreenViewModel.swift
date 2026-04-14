@@ -13,23 +13,32 @@ import Observation
 
 @Observable
 final class PortfolioDetailsScreenViewModel {
-    private let portfolioName: String
     private let portfolioDataManager: ManagesPortfolioData
-    private let realtimeAssetPriceProvider: ProvidesRealtimeAssetPrices
+    private let realtimePricesProvider: ProvidesRealtimePrices
+    private let portfolioStatisticsManager: PortfolioStatisticsDataManager
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []
     
-    var portfolioPrice: [Amount] = []
+    var totalAmount: [Amount]?
     var portfolio: Portfolio
-    var error: String?
 
     init(dependencyContainer: DIContainer, portfolio: Portfolio) {
-        self.portfolioName = portfolio.name
         self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
+        
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
-        self.realtimeAssetPriceProvider = RealtimePriceProvider(eodhdNetworkService: dependencyContainer.eodhdNetworkService)
+        
+        self.realtimePricesProvider = RealtimePricesProvider(
+            eodhdNetworkService: dependencyContainer.eodhdNetworkService,
+            cache: dependencyContainer.realtimePriceCache
+        )
+        
+        self.portfolioStatisticsManager = PortfolioStatisticsDataManager(
+            realtimePricesProvider: realtimePricesProvider
+        )
+        
         self.portfolio = portfolio
+        
         setupBindings()
     }
 }
@@ -46,23 +55,22 @@ extension PortfolioDetailsScreenViewModel {
 
     func loadPortfolio() async {
         do {
-            guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolioName) else {
+            guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolio.name) else {
                 return
             }
 
             self.portfolio = portfolio
             await loadPortfolioPrice()
-            error = nil
         } catch {
-            self.error = error.localizedDescription
+            
         }
     }
     
     func loadPortfolioPrice() async {
         do {
-            portfolioPrice = try await realtimeAssetPriceProvider.currentPrice(for: portfolio)
+            totalAmount = try await portfolioStatisticsManager.totalAmount(in: portfolio)
         } catch {
-            self.error = error.localizedDescription
+
         }
     }
 }
