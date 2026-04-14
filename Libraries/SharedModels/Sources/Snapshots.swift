@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct PositionSnapshot: Equatable, Hashable  {
+public struct PositionSnapshot: Equatable, Hashable, Sendable {
     public let ticker: AssetTicker
     public let quantity: Double
     public let price: Amount
@@ -19,7 +19,7 @@ public struct PositionSnapshot: Equatable, Hashable  {
     }
 }
 
-public struct PortfolioSnapshot: Equatable, Hashable  {
+public struct PortfolioSnapshot: Equatable, Hashable, Sendable {
     public let positions: [PositionSnapshot]
     public let date: Date
     public let name: String

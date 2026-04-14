@@ -11,20 +11,18 @@ import SharedModels
 
 @Model
 final class PositionSnapshotEntity {
-    @Relationship
-    var ticker: AssetTickerEntity
-    
+    var asset: AssetTicker
     var quantity: Double
     var price: Amount
     var portfolio: PortfolioSnapshotEntity
     
     init(
-        ticker: AssetTickerEntity,
+        asset: AssetTicker,
         quantity: Double,
         price: Amount,
         portfolio: PortfolioSnapshotEntity
     ) {
-        self.ticker = ticker
+        self.asset = asset
         self.quantity = quantity
         self.price = price
         self.portfolio = portfolio

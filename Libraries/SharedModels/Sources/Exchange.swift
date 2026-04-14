@@ -5,7 +5,7 @@
 //  Created by Илья Бочков on 1.04.26.
 //
 
-public struct Exchange: Equatable, Hashable  {
+public struct Exchange: Equatable, Hashable, Sendable, Codable {
     public let name: String
     public let code: String
     public let country: String

@@ -16,14 +16,14 @@ final class ExchangeEntity {
     var country: String
     var currency: Currency
     
-    @Relationship(deleteRule: .cascade, inverse: \AssetTickerEntity.exchange)
-    var tickers: [AssetTickerEntity]
+    @Relationship(deleteRule: .cascade, inverse: \AssetEntity.exchange)
+    var assets: [AssetEntity]
     
-    init(name: String, code: String, country: String, currency: Currency, tickers: [AssetTickerEntity]) {
+    init(name: String, code: String, country: String, currency: Currency, assets: [AssetEntity]) {
         self.name = name
         self.code = code
         self.country = country
         self.currency = currency
-        self.tickers = tickers
+        self.assets = assets
     }
 }

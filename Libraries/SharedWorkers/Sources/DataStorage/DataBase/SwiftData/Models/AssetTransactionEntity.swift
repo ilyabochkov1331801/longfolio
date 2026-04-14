@@ -15,7 +15,7 @@ final class AssetTransactionEntity {
     var id: String
     
     @Relationship
-    var ticker: AssetTickerEntity
+    var asset: AssetEntity
         
     var date: Date
     var type: AssetTransactionType
@@ -27,7 +27,7 @@ final class AssetTransactionEntity {
         id: String,
         date: Date,
         type: AssetTransactionType,
-        ticker: AssetTickerEntity,
+        asset: AssetEntity,
         quantity: Double,
         amount: Amount,
         portfolio: PortfolioEntity
@@ -35,7 +35,7 @@ final class AssetTransactionEntity {
         self.id = id
         self.date = date
         self.type = type
-        self.ticker = ticker
+        self.asset = asset
         self.quantity = quantity
         self.amount = amount
         self.portfolio = portfolio

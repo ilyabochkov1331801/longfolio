@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CashTransaction: Equatable, Hashable  {
+public struct CashTransaction: Equatable, Hashable, Sendable {
     public let id: String
     public let date: Date
     public let amount: Amount

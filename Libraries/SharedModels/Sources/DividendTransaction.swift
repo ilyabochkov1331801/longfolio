@@ -7,13 +7,13 @@
 
 import Foundation
 
-public struct DividendTransaction: Equatable, Hashable  {
+public struct DividendTransaction: Equatable, Hashable, Sendable {
     public let id: String
     public let date: Date
-    public let asset: AssetTicker
+    public let asset: Asset
     public let amount: Amount
 
-    public init(id: String, date: Date, asset: AssetTicker, amount: Amount) {
+    public init(id: String, date: Date, asset: Asset, amount: Amount) {
         self.id = id
         self.date = date
         self.asset = asset

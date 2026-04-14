@@ -16,12 +16,23 @@ struct CreateAssetTransactionDetailsScreenView: View {
         BaseScreenView(router: router) {
             Form {
                 Section("Asset") {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(viewModel.asset.ticker.ticker)
-                            .font(.headline)
-                        Text(viewModel.asset.ticker.exchange.code)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(viewModel.asset.ticker.ticker)
+                                .font(.headline)
+                            Text(viewModel.asset.ticker.exchange.code)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        if let currentPrice = viewModel.currentPrice {
+                            AmountView(amount: currentPrice)
+                        } else {
+                            ProgressView()
+                                .padding()
+                        }
                     }
                 }
 
@@ -31,7 +42,11 @@ struct CreateAssetTransactionDetailsScreenView: View {
                         selection: $viewModel.type
                     ) {
                         Text("Buy").tag(AssetTransactionType.buy)
-                        Text("Sell").tag(AssetTransactionType.sell)
+                        Text("Sell").tag(
+                            AssetTransactionType.sell(
+                                profit: Amount(value: viewModel.profite, currency: viewModel.asset.currency)
+                            )
+                        )
                     }
 
                     DatePicker(
@@ -61,6 +76,19 @@ struct CreateAssetTransactionDetailsScreenView: View {
                             formatter: AmountTextInputFormatter()
                         )
                     )
+                    
+                    if viewModel.type != .buy {
+                        TextInput(
+                            output: $viewModel.profite,
+                            configuration: .init(
+                                title: "Profite",
+                                placeholder: "Enter amount",
+                                hint: "Diff beetwen buy and cell",
+                                keyboardType: .decimalPad,
+                                formatter: AmountTextInputFormatter()
+                            )
+                        )
+                    }
                 }
             }
             .navigationTitle("New Asset Transaction")
@@ -87,6 +115,9 @@ struct CreateAssetTransactionDetailsScreenView: View {
                     Text(viewModel.error ?? "")
                 }
             )
+            .task {
+                await viewModel.loadCurrentPrice()
+            }
         }
     }
 }

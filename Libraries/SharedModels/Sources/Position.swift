@@ -5,14 +5,14 @@
 //  Created by Alena Nesterkina on 24.03.26.
 //
 
-public struct Position: Equatable, Hashable  {
-    public let ticker: AssetTicker
+public struct Position: Equatable, Hashable, Sendable {
+    public let asset: Asset
     public let quantity: Double
-    public let averageOpenPrice: Amount
+    public let openAmount: Amount
 
-    public init(ticker: AssetTicker, quantity: Double, averageOpenPrice: Amount) {
-        self.ticker = ticker
+    public init(asset: Asset, quantity: Double, openAmount: Amount) {
+        self.asset = asset
         self.quantity = quantity
-        self.averageOpenPrice = averageOpenPrice
+        self.openAmount = openAmount
     }
 }

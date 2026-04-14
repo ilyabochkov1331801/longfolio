@@ -28,7 +28,7 @@ public final class AssetsDataManager: ManagesAssetsData {
         let exchangeCode = ticker.exchange.code
         let descriptor = FetchDescriptor<AssetEntity>(
             predicate: #Predicate {
-                $0.ticker.ticker == tickerCode && $0.ticker.exchange.code == exchangeCode
+                $0.ticker == tickerCode && $0.exchange.code == exchangeCode
             }
         )
 
@@ -41,8 +41,13 @@ public final class AssetsDataManager: ManagesAssetsData {
         }
 
         let exchange = try fetchOrCreateExchange(from: asset.ticker.exchange)
-        let ticker = try fetchOrCreateTicker(from: asset.ticker, exchange: exchange)
-        let assetEntity = AssetEntity(priceHistory: [], currency: asset.currency, ticker: ticker)
+        let assetEntity = AssetEntity(
+            priceHistory: [],
+            ticker: asset.ticker.ticker,
+            currency: asset.currency,
+            exchange: exchange,
+            positions: []
+        )
         dataBase.insert(entity: assetEntity)
 
         let priceHistory = asset.priceHistory.map { dayPrice in
@@ -70,27 +75,9 @@ public final class AssetsDataManager: ManagesAssetsData {
             code: exchange.code,
             country: exchange.country,
             currency: exchange.currency,
-            tickers: []
+            assets: []
         )
         dataBase.insert(entity: newExchange)
         return newExchange
-    }
-
-    private func fetchOrCreateTicker(from asset: AssetTicker, exchange: ExchangeEntity) throws -> AssetTickerEntity {
-        let assetTicker = asset.ticker
-        let exchangeCode = asset.exchange.code
-        let descriptor = FetchDescriptor<AssetTickerEntity>(
-            predicate: #Predicate {
-                $0.ticker == assetTicker && $0.exchange.code == exchangeCode
-            }
-        )
-
-        if let existingTicker = try dataBase.fetch(descriptor: descriptor).first {
-            return existingTicker
-        }
-
-        let newTicker = AssetTickerEntity(ticker: asset.ticker, exchange: exchange)
-        dataBase.insert(entity: newTicker)
-        return newTicker
     }
 }

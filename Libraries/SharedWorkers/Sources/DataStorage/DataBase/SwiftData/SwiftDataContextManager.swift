@@ -31,7 +31,6 @@ public final class SwiftDataContextManager: ManagesSwiftDataContext {
         try SwiftDataContextManager(
             models: [
                 AssetEntity.self,
-                AssetTickerEntity.self,
                 AssetDayPriceEntity.self,
                 AssetTransactionEntity.self,
                 CashTransactionEntity.self,

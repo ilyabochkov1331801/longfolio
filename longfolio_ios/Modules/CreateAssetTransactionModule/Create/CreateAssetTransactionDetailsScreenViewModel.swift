@@ -13,13 +13,16 @@ import SharedWorkers
 final class CreateAssetTransactionDetailsScreenViewModel {
     private let assetsDataManager: ManagesAssetsData
     private let transactionsDataManager: ManagesTransactionsData
+    private let realtimePricesProvider: ProvidesRealtimePrices
     private let portfolioName: String
 
     let asset: Asset
+    var currentPrice: Amount?
     var type: AssetTransactionType = .buy
     var date: Date = .now
     var amount: Double = 0
     var quantity: Double = 0
+    var profite: Double = 0
     var error: String?
 
     var canSave: Bool {
@@ -32,11 +35,23 @@ final class CreateAssetTransactionDetailsScreenViewModel {
         self.transactionsDataManager = TransactionsDataManager(dataBase: dataBase)
         self.portfolioName = portfolioName
         self.asset = asset
+        self.realtimePricesProvider = RealtimePricesProvider(
+            eodhdNetworkService: dependencyContainer.eodhdNetworkService,
+            cache: dependencyContainer.realtimePriceCache
+        )
     }
 }
 
 @MainActor
 extension CreateAssetTransactionDetailsScreenViewModel {
+    func loadCurrentPrice() async {
+        do {
+            currentPrice = try await realtimePricesProvider.realtimePrice(for: asset)
+        } catch {
+            
+        }
+    }
+    
     func createTransaction() -> Bool {
         guard canSave else { return false }
 
@@ -44,7 +59,7 @@ extension CreateAssetTransactionDetailsScreenViewModel {
             let asset = try assetsDataManager.saveAsset(asset)
             try transactionsDataManager.createAssetTransaction(
                 for: portfolioName,
-                asset: asset.ticker,
+                asset: asset,
                 type: type,
                 quantity: quantity,
                 amount: Amount(value: amount, currency: asset.currency),

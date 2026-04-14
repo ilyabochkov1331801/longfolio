@@ -40,7 +40,7 @@ final class SearchAssetsForTransactionScreenViewModel {
         self.portfolioName = portfolio.name
         self.eodhdNetworkService = dependencyContainer.eodhdNetworkService
         self.assetsDataManager = assetsDataManager
-        self.displayedAssets = portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.ticker) }
+        self.displayedAssets = portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.asset.ticker) }
     }
 }
 
@@ -62,7 +62,7 @@ extension SearchAssetsForTransactionScreenViewModel {
         let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedQuery.isEmpty else {
-            displayedAssets = portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.ticker) }
+            displayedAssets = portfolio.positions.compactMap { try? assetsDataManager.fetchAsset(for: $0.asset.ticker) }
             error = nil
             return
         }

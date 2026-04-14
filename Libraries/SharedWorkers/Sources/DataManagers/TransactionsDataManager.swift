@@ -15,16 +15,18 @@ public protocol ManagesTransactionsData {
         amount: Amount,
         date: Date
     ) throws
+    
     func createDividendTransaction(
         for portfolioName: String,
-        asset: AssetTicker,
+        asset: Asset,
         quantity: Double,
         amount: Amount,
         date: Date
     ) throws
+    
     func createAssetTransaction(
         for portfolioName: String,
-        asset: AssetTicker,
+        asset: Asset,
         type: AssetTransactionType,
         quantity: Double,
         amount: Amount,
@@ -32,11 +34,18 @@ public protocol ManagesTransactionsData {
     ) throws
 }
 
+public enum TransactionsErrors: Error {
+    case nothingToSell
+}
+
 public final class TransactionsDataManager: ManagesTransactionsData {
     private let dataBase: SwiftDataBaseProtocol
+    private let assetsDataManager: ManagesAssetsData
 
     public init(dataBase: SwiftDataBaseProtocol) {
         self.dataBase = dataBase
+        let assetsDataManager = AssetsDataManager(dataBase: dataBase)
+        self.assetsDataManager = assetsDataManager
     }
 
     public func createCashTransaction(
@@ -66,12 +75,13 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         portfolio.cashTransactions.append(transaction)
 
         dataBase.insert(entity: transaction)
+
         try dataBase.save()
     }
 
     public func createDividendTransaction(
         for portfolioName: String,
-        asset: AssetTicker,
+        asset: Asset,
         quantity: Double,
         amount: Amount,
         date: Date
@@ -84,13 +94,12 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             return
         }
 
-        let exchange = try fetchOrCreateExchange(from: asset.exchange)
-        let ticker = try fetchOrCreateTicker(from: asset, exchange: exchange)
+        let assetEntity = try fetchOrCreateAsset(from: asset)
 
         let transaction = DividendTransactionEntity(
             id: UUID().uuidString,
             date: date,
-            ticker: ticker,
+            asset: assetEntity,
             quantity: quantity,
             amount: amount,
             portfolio: portfolio
@@ -108,7 +117,7 @@ public final class TransactionsDataManager: ManagesTransactionsData {
 
     public func createAssetTransaction(
         for portfolioName: String,
-        asset: AssetTicker,
+        asset: Asset,
         type: AssetTransactionType,
         quantity: Double,
         amount: Amount,
@@ -122,14 +131,13 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             return
         }
 
-        let exchange = try fetchOrCreateExchange(from: asset.exchange)
-        let ticker = try fetchOrCreateTicker(from: asset, exchange: exchange)
-
+        let assetEntity = try fetchOrCreateAsset(from: asset)
+        
         let transaction = AssetTransactionEntity(
             id: UUID().uuidString,
             date: date,
             type: type,
-            ticker: ticker,
+            asset: assetEntity,
             quantity: quantity,
             amount: amount,
             portfolio: portfolio
@@ -149,7 +157,7 @@ public final class TransactionsDataManager: ManagesTransactionsData {
 
         try updatePosition(
             in: portfolio,
-            ticker: ticker,
+            asset: assetEntity,
             type: type,
             quantity: quantity,
             amount: amount
@@ -189,68 +197,83 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             code: exchange.code,
             country: exchange.country,
             currency: exchange.currency,
-            tickers: []
+            assets: []
         )
         dataBase.insert(entity: newExchange)
         return newExchange
     }
-
-    private func fetchOrCreateTicker(from asset: AssetTicker, exchange: ExchangeEntity) throws -> AssetTickerEntity {
-        let assetTicker = asset.ticker
-        let exchangeCode = asset.exchange.code
-        let descriptor = FetchDescriptor<AssetTickerEntity>(
+    
+    private func fetchOrCreateAsset(from asset: Asset) throws -> AssetEntity {
+        let assetTicker = asset.ticker.ticker
+        let exchangeCode = asset.ticker.exchange.code
+        let descriptor = FetchDescriptor<AssetEntity>(
             predicate: #Predicate {
                 $0.ticker == assetTicker && $0.exchange.code == exchangeCode
             }
         )
 
-        if let existingTicker = try dataBase.fetch(descriptor: descriptor).first {
-            return existingTicker
+        if let existingAsset = try dataBase.fetch(descriptor: descriptor).first {
+            return existingAsset
         }
 
-        let newTicker = AssetTickerEntity(ticker: asset.ticker, exchange: exchange)
-        dataBase.insert(entity: newTicker)
-        return newTicker
+        let exchange = try fetchOrCreateExchange(from: asset.ticker.exchange)
+        let assetEntity = AssetEntity(
+            priceHistory: [],
+            ticker: assetTicker,
+            currency: asset.currency,
+            exchange: exchange,
+            positions: []
+        )
+        let priceHistory = asset.priceHistory.map { dayPrice in
+            AssetDayPriceEntity(date: dayPrice.date, price: dayPrice.price, asset: assetEntity)
+        }
+        assetEntity.priceHistory = priceHistory
+
+        dataBase.insert(entity: assetEntity)
+        return assetEntity
     }
 
     private func updatePosition(
         in portfolio: PortfolioEntity,
-        ticker: AssetTickerEntity,
+        asset: AssetEntity,
         type: AssetTransactionType,
         quantity: Double,
         amount: Amount
     ) throws {
         if let position = portfolio.positions.first(where: {
-            $0.ticker.ticker == ticker.ticker && $0.ticker.exchange.code == ticker.exchange.code
+            $0.asset.ticker == asset.ticker && $0.asset.exchange.code == asset.exchange.code
         }) {
             switch type {
             case .buy:
-                let totalOpenAmount = position.averageOpenPrice.value * position.quantity + amount.value
-                let newQuantity = position.quantity + quantity
-                position.quantity = newQuantity
-                position.averageOpenPrice = Amount(
-                    value: newQuantity == 0 ? 0 : totalOpenAmount / newQuantity,
+                position.quantity = position.quantity + quantity
+                position.openAmount = Amount(
+                    value: position.openAmount.value + amount.value,
                     currency: amount.currency
                 )
-            case .sell:
+            case let .sell(profit):
                 position.quantity = max(0, position.quantity - quantity)
+                position.openAmount = Amount(
+                    value: max(0, position.openAmount.value - (amount.value - profit.value)),
+                    currency: amount.currency
+                )
             }
 
             return
         }
 
-        guard type == .buy else { return }
+        guard type == .buy else {
+            throw TransactionsErrors.nothingToSell
+        }
 
         let newPosition = PositionEntity(
-            ticker: ticker,
+            asset: asset,
             quantity: quantity,
-            averageOpenPrice: Amount(
-                value: quantity == 0 ? 0 : amount.value / quantity,
-                currency: amount.currency
-            ),
+            openAmount: amount,
             portfolio: portfolio
         )
+        asset.positions.append(newPosition)
         portfolio.positions.append(newPosition)
+        
         dataBase.insert(entity: newPosition)
     }
 }
