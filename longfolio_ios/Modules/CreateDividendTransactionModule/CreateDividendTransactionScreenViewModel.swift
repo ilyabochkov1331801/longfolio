@@ -29,7 +29,7 @@ final class CreateDividendTransactionScreenViewModel {
         self.transactionsDataManager = TransactionsDataManager(dataBase: dataBase)
         self.portfolioName = portfolio.name
         self.positions = portfolio.positions
-        self.selectedTicker = portfolio.positions.first?.ticker
+        self.selectedTicker = portfolio.positions.first?.asset.ticker
     }
 }
 
@@ -38,7 +38,7 @@ extension CreateDividendTransactionScreenViewModel {
     func createDividendTransaction() -> Bool {
         guard
             let selectedTicker,
-            let selectedPosition = positions.first(where: { $0.ticker == selectedTicker })
+            let selectedPosition = positions.first(where: { $0.asset.ticker == selectedTicker })
         else {
             return false
         }
@@ -46,7 +46,7 @@ extension CreateDividendTransactionScreenViewModel {
         do {
             try transactionsDataManager.createDividendTransaction(
                 for: portfolioName,
-                asset: selectedTicker,
+                asset: selectedPosition.asset,
                 quantity: selectedPosition.quantity,
                 amount: Amount(
                     value: amountValue,

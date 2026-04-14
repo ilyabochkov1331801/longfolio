@@ -17,7 +17,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git", exact: "5.11.1")
+        .package(url: "https://github.com/Alamofire/Alamofire.git", exact: "5.11.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

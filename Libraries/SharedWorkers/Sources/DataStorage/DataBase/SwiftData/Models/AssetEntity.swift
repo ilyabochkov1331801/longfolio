@@ -11,31 +11,28 @@ import SharedModels
 
 @Model
 final class AssetEntity {
+    var ticker: String
+    var currency: Currency
+    var exchange: ExchangeEntity
+    
     @Relationship(deleteRule: .cascade, inverse: \AssetDayPriceEntity.asset)
     var priceHistory: [AssetDayPriceEntity]
     
-    @Relationship
-    var ticker: AssetTickerEntity
-    
-    var currency: Currency
-    
-    init(priceHistory: [AssetDayPriceEntity], currency: Currency, ticker: AssetTickerEntity) {
+    @Relationship(deleteRule: .cascade, inverse: \PositionEntity.asset)
+    var positions: [PositionEntity]
+
+    init(
+        priceHistory: [AssetDayPriceEntity],
+        ticker: String,
+        currency: Currency,
+        exchange: ExchangeEntity,
+        positions: [PositionEntity]
+    ) {
         self.priceHistory = priceHistory
+        self.ticker = ticker
         self.currency = currency
-        self.ticker = ticker
-    }
-}
-
-@Model
-final class AssetTickerEntity {
-    #Unique<AssetTickerEntity>([\.ticker, \.exchange])
-
-    var ticker: String
-    var exchange: ExchangeEntity
-    
-    init(ticker: String, exchange: ExchangeEntity) {
-        self.ticker = ticker
         self.exchange = exchange
+        self.positions = positions
     }
 }
 

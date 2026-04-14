@@ -42,7 +42,7 @@ struct PortfolioDetailsScreenView: View {
             }
         }
         .task {
-            viewModel.loadPortfolio()
+            await viewModel.loadPortfolio()
         }
     }
 
@@ -50,8 +50,23 @@ struct PortfolioDetailsScreenView: View {
     private var screenContent: some View {
         List {
             Section("Portfolio") {
-                Text(viewModel.portfolio.name)
-                    .font(.headline)
+                HStack {
+                    Text(viewModel.portfolio.name)
+                        .font(.headline)
+
+                    Spacer()
+
+                    if let totalAmount = viewModel.totalAmount {
+                        VStack(alignment: .trailing) {
+                            ForEach(totalAmount.sorted(), id: \.currency) { amount in
+                                AmountView(amount: amount)
+                            }
+                        }
+                    } else {
+                        ProgressView()
+                            .padding()
+                    }
+                }
             }
 
             Section("Cash Balance") {
@@ -78,10 +93,10 @@ struct PortfolioDetailsScreenView: View {
                     Text("No positions yet")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(viewModel.portfolio.positions, id: \.ticker) { position in
+                    ForEach(viewModel.portfolio.positions, id: \.asset) { position in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Text(position.ticker.ticker)
+                                Text(position.asset.ticker.ticker)
                                     .font(.headline)
 
                                 Spacer()
@@ -91,14 +106,14 @@ struct PortfolioDetailsScreenView: View {
                             }
 
                             HStack {
-                                Text(position.ticker.exchange.code)
+                                Text(position.asset.ticker.exchange.code)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
 
                                 Spacer()
 
                                 Text(
-                                    position.averageOpenPrice.value,
+                                    position.openAmount.value,
                                     format: .number.precision(.fractionLength(2))
                                 )
                                 .font(.caption)
@@ -148,3 +163,4 @@ struct PortfolioDetailsScreenView: View {
         }
     }
 }
+

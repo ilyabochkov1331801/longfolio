@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Asset: Equatable, Hashable  {
+public struct Asset: Equatable, Hashable, Sendable {
     public let ticker: AssetTicker
     public let currency: Currency
     public let priceHistory: [AssetDayPrice]
@@ -19,7 +19,7 @@ public struct Asset: Equatable, Hashable  {
     }
 }
 
-public struct AssetTicker: Equatable, Hashable  {
+public struct AssetTicker: Equatable, Hashable, Sendable, Codable {
     public let ticker: String
     public let exchange: Exchange
 
@@ -29,7 +29,7 @@ public struct AssetTicker: Equatable, Hashable  {
     }
 }
 
-public struct AssetDayPrice: Equatable, Hashable  {
+public struct AssetDayPrice: Equatable, Hashable, Sendable {
     public let date: Date
     public let price: Amount
 

@@ -15,7 +15,7 @@ final class DividendTransactionEntity {
     var id: String
     
     @Relationship
-    var ticker: AssetTickerEntity
+    var asset: AssetEntity
     
     var date: Date
     var quantity: Double
@@ -25,14 +25,14 @@ final class DividendTransactionEntity {
     init(
         id: String,
         date: Date,
-        ticker: AssetTickerEntity,
+        asset: AssetEntity,
         quantity: Double,
         amount: Amount,
         portfolio: PortfolioEntity
     ) {
         self.id = id
         self.date = date
-        self.ticker = ticker
+        self.asset = asset
         self.quantity = quantity
         self.amount = amount
         self.portfolio = portfolio
