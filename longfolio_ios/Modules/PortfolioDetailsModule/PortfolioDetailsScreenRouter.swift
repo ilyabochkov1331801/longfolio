@@ -13,6 +13,7 @@ enum PortfolioDetailsScreenRoute: Hashable, Identifiable {
     case createCashTransaction(Portfolio)
     case createAssetTransaction(Portfolio)
     case createDividendTransaction(Portfolio)
+    case openHistory(Portfolio)
 }
 
 final class PortfolioDetailsScreenRouter: DefaultRouter<PortfolioDetailsScreenRoute> { }

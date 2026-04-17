@@ -39,6 +39,11 @@ struct PortfolioDetailsScreenView: View {
                     viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
                     router: .init(parent: router)
                 )
+            case let .openHistory(portfolio):
+                PortfolioHistoryScreenView(
+                    viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
+                    router: .init(parent: router)
+                )
             }
         }
         .task {
@@ -112,7 +117,13 @@ struct PortfolioDetailsScreenView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Portfolio Details")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    router.navigate(to: .openHistory(viewModel.portfolio))
+                } label: {
+                    Image(systemName: "clock.arrow.circlepath")
+                }
+
                 Menu {
                     Button("Cash") {
                         router.navigateModaly(to: .createCashTransaction(viewModel.portfolio))
@@ -132,4 +143,3 @@ struct PortfolioDetailsScreenView: View {
         }
     }
 }
-
