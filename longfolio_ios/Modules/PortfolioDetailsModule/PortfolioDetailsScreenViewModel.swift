@@ -20,7 +20,13 @@ final class PortfolioDetailsScreenViewModel {
     private var cancelBag: Set<AnyCancellable> = []
     
     var totalAmount: [Amount]?
+    var profitAmount: [Amount]?
     var portfolio: Portfolio
+    
+    var positionsForDisplaying: [Position] = []
+    var positionsAmount: [Asset: Amount] = [:]
+    var positionsProfit: [Asset: Amount] = [:]
+    var canShowMorePositions = false
 
     init(dependencyContainer: DIContainer, portfolio: Portfolio) {
         self.contextManager = dependencyContainer.contextManager
@@ -38,7 +44,8 @@ final class PortfolioDetailsScreenViewModel {
         )
         
         self.portfolio = portfolio
-        
+        positionsForDisplaying = Array(portfolio.positions.sorted(by: { $0.openAmount < $1.openAmount }).prefix(5))
+        canShowMorePositions = portfolio.positions.count > 2
         setupBindings()
     }
 }
@@ -60,15 +67,26 @@ extension PortfolioDetailsScreenViewModel {
             }
 
             self.portfolio = portfolio
-            await loadPortfolioPrice()
+            positionsForDisplaying = Array(portfolio.positions.sorted(by: { $0.openAmount < $1.openAmount }).prefix(2))
+            canShowMorePositions = portfolio.positions.count > 2
+            await loadAmounts()
         } catch {
             
         }
     }
     
-    func loadPortfolioPrice() async {
+    func loadAmounts() async {
         do {
             totalAmount = try await portfolioStatisticsManager.totalAmount(in: portfolio)
+            profitAmount = try await portfolioStatisticsManager.openPositionsProfit(in: portfolio)
+            
+            for position in portfolio.positions {
+                let price = try await realtimePricesProvider.realtimePrice(for: position)
+                let profit = Amount(value: price.value - position.openAmount.value, currency: price.currency)
+                
+                positionsAmount[position.asset] = price
+                positionsProfit[position.asset] = profit
+            }
         } catch {
 
         }

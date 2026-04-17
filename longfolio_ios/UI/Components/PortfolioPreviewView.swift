@@ -2,7 +2,7 @@
 //  PortfolioPreviewView.swift
 //  longfolio
 //
-//  Created by Илья Бочков on 13.04.26.
+//  Created by Илья Бочков on 14.04.26.
 //
 
 import SwiftUI
@@ -17,6 +17,7 @@ struct PortfolioPreviewView: View {
         HStack(alignment: .top) {
             Text(portfolio.name)
                 .font(.headline)
+                .foregroundStyle(.black)
             
             Spacer()
             
