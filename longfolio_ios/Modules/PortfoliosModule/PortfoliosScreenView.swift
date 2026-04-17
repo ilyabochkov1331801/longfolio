@@ -60,10 +60,11 @@ struct PortfoliosScreenView: View {
                         portfolio: portfolio,
                         portfolioAmount: viewModel.amounts[portfolio.name],
                         profitAmount: viewModel.profits[portfolio.name]
-                    )
+                    ).onTapGesture {
+                        router.navigate(to: .portfolioDetails(portfolio))
+                    }
                 }
-                .buttonStyle(.plain)
-                .padding(.vertical, 4)
+                .buttonStyle(.borderless)
             }
             .onDelete { indeces in
                 for index in indeces {
@@ -71,26 +72,29 @@ struct PortfoliosScreenView: View {
                 }
             }
                         
-            HStack(alignment: .top) {
-                Text("Total")
-                    .font(.headline)
-                
-                Spacer()
-                
-                if let totalAmount = viewModel.totalAmount {
-                    VStack(alignment: .trailing) {
-                        ForEach(totalAmount, id: \.currency) { amount in
-                            AmountView(amount: amount)
+            Section {
+                HStack(alignment: .top) {
+                    Text("Total")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    if let totalAmount = viewModel.totalAmount {
+                        VStack(alignment: .trailing) {
+                            ForEach(totalAmount, id: \.currency) { amount in
+                                AmountView(amount: amount)
+                            }
                         }
+                    } else {
+                        ProgressView()
+                            .padding()
                     }
-                } else {
-                    ProgressView()
-                        .padding()
                 }
+                .padding()
             }
-            .padding()
+            
         }
-        .listStyle(.plain)
+        .listStyle(.insetGrouped)
         .overlay {
             if viewModel.portfolios.isEmpty {
                 ContentUnavailableView(

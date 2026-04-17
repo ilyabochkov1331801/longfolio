@@ -13,5 +13,6 @@ struct AmountView: View {
     
     var body: some View {
         Text(amount.formatted ?? "NaN")
+            .foregroundStyle(.black)
     }
 }

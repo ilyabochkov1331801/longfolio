@@ -49,78 +49,47 @@ struct PortfolioDetailsScreenView: View {
     @ViewBuilder
     private var screenContent: some View {
         List {
-            Section("Portfolio") {
-                HStack {
-                    Text(viewModel.portfolio.name)
-                        .font(.headline)
-
-                    Spacer()
-
-                    if let totalAmount = viewModel.totalAmount {
-                        VStack(alignment: .trailing) {
-                            ForEach(totalAmount.sorted(), id: \.currency) { amount in
-                                AmountView(amount: amount)
-                            }
-                        }
-                    } else {
-                        ProgressView()
-                            .padding()
-                    }
-                }
-            }
+            PortfolioPreviewView(
+                portfolio: viewModel.portfolio,
+                portfolioAmount: viewModel.totalAmount,
+                profitAmount: viewModel.profitAmount
+            )
 
             Section("Cash Balance") {
                 if viewModel.portfolio.cashAmount.isEmpty {
                     Text("No cash balance yet")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(viewModel.portfolio.cashAmount, id: \.currency) { amount in
+                    ForEach(viewModel.portfolio.cashAmount.sorted(), id: \.currency) { amount in
                         HStack {
                             Text(amount.currency.rawValue.uppercased())
                                 .font(.headline)
 
                             Spacer()
 
-                            Text(amount.value, format: .number.precision(.fractionLength(2)))
-                                .font(.body.weight(.medium))
+                            AmountView(amount: amount)
                         }
                     }
                 }
             }
 
             Section("Positions") {
-                if viewModel.portfolio.positions.isEmpty {
+                if viewModel.positionsForDisplaying.isEmpty {
                     Text("No positions yet")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(viewModel.portfolio.positions, id: \.asset) { position in
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Text(position.asset.ticker.ticker)
-                                    .font(.headline)
-
-                                Spacer()
-
-                                Text(position.quantity, format: .number.precision(.fractionLength(4)))
-                                    .font(.body.weight(.medium))
-                            }
-
-                            HStack {
-                                Text(position.asset.ticker.exchange.code)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-
-                                Spacer()
-
-                                Text(
-                                    position.openAmount.value,
-                                    format: .number.precision(.fractionLength(2))
-                                )
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.vertical, 2)
+                    ForEach(viewModel.positionsForDisplaying, id: \.asset) { position in
+                        PositionPreviewView(
+                            position: position,
+                            amount: viewModel.positionsAmount[position.asset],
+                            profit: viewModel.positionsProfit[position.asset]
+                        )
+                    }
+                }
+                
+                if viewModel.canShowMorePositions {
+                    Button("All positions") {
+                        
                     }
                 }
             }
@@ -140,8 +109,8 @@ struct PortfolioDetailsScreenView: View {
                 .buttonStyle(.plain)
             }
         }
-        .listStyle(.plain)
-        .navigationTitle(viewModel.portfolio.name)
+        .listStyle(.insetGrouped)
+        .navigationTitle("Portfolio Details")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
