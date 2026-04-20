@@ -11,4 +11,8 @@ extension Date {
     func isSameDay(with other: Date) -> Bool {
         Calendar.current.isDate(self, inSameDayAs: other)
     }
+    
+    var isWeekend: Bool {
+        Calendar.current.isDateInWeekend(self)
+    }
 }

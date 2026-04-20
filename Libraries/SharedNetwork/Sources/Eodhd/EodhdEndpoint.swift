@@ -70,7 +70,7 @@ private extension EodhdEndpoint {
 
 fileprivate enum Constants {
     // DEMO only works for AAPL.US, TSLA.US , VTI.US, AMZN.US, BTC-USD tickers
-    // static let apiToken = "demo"
+    //static let apiToken = "demo"
     static let apiToken = "69cc371c468066.79063897"
     static let endpoint = "https://eodhd.com/api"
 }

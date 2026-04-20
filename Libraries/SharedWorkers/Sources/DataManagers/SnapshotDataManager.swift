@@ -14,8 +14,18 @@ public protocol ManagesSnapshotData {
     func getOrFetchSnapshot(for date: Date, portfolio: Portfolio) async throws -> PortfolioSnapshot
 }
 
-enum SnapshotDataManagerError: Error {
+public enum SnapshotDataManagerError: LocalizedError {
     case dataNotFound
+    case weekendDate(Date)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .dataNotFound:
+            "Data not found"
+        case .weekendDate:
+            "Portfolio history is unavailable for weekends"
+        }
+    }
 }
 
 public final class SnapshotDataManager: ManagesSnapshotData {
@@ -30,6 +40,10 @@ public final class SnapshotDataManager: ManagesSnapshotData {
     }
     
     public func getOrFetchSnapshot(for date: Date, portfolio: Portfolio) async throws -> PortfolioSnapshot {
+        if date.isWeekend {
+            throw SnapshotDataManagerError.weekendDate(date)
+        }
+        
         let cashTransactions = portfolio.cashTransactions.filter { $0.date <= date }
         let dividendsTransactions = portfolio.dividendsTransactions.filter { $0.date <= date }
         let assetsTransactions = portfolio.assetsTransactions.filter { $0.date <= date }

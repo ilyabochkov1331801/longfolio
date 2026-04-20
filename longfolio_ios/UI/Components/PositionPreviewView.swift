@@ -9,24 +9,45 @@ import SwiftUI
 import SharedModels
 
 struct PositionPreviewView: View {
-    let position: Position
-    let amount: Amount?
-    let profit: Amount?
+    private let ticker: String
+    private let exchange: String
+    private let quantity: Double
+    private let amount: Amount?
+    private let profit: Amount?
+    
+    init(position: Position, amount: Amount?, profit: Amount?) {
+        self.ticker = position.asset.ticker.ticker
+        self.exchange = position.asset.ticker.exchange.code
+        self.quantity = position.quantity
+        self.amount = amount
+        self.profit = profit
+    }
+    
+    init(position: PositionSnapshot) {
+        self.ticker = position.ticker.ticker
+        self.exchange = position.ticker.exchange.code
+        self.quantity = position.quantity
+        self.amount = position.price
+        self.profit = Amount(
+            value: position.price.value - position.openAmount.value,
+            currency: position.price.currency
+        )
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(position.asset.ticker.ticker)
+                Text(ticker)
                     .font(.headline)
 
                 Spacer()
 
-                Text(position.quantity, format: .number.precision(.fractionLength(2)))
+                Text(quantity, format: .number.precision(.fractionLength(2)))
                     .font(.body.weight(.medium))
             }
 
             HStack {
-                Text(position.asset.ticker.exchange.code)
+                Text(exchange)
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
