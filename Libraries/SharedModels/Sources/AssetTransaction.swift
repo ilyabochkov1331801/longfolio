@@ -13,12 +13,14 @@ public struct AssetTransaction: Equatable, Hashable, Sendable {
     public let type: AssetTransactionType
     public let quantity: Double
     public let amount: Amount
+    public let asset: Asset
 
-    public init(id: String, date: Date, type: AssetTransactionType, quantity: Double, amount: Amount) {
+    public init(id: String, date: Date, type: AssetTransactionType, quantity: Double, amount: Amount, asset: Asset) {
         self.id = id
         self.date = date
         self.type = type
         self.quantity = quantity
         self.amount = amount
+        self.asset = asset
     }
 }

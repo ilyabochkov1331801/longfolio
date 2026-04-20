@@ -35,7 +35,8 @@ final class SwiftDataModelsMapper {
             date: entity.date,
             type: entity.type,
             quantity: entity.quantity,
-            amount: entity.amount
+            amount: entity.amount,
+            asset: makeAsset(from: entity.asset)
         )
     }
 
@@ -77,7 +78,8 @@ final class SwiftDataModelsMapper {
         PositionSnapshot(
             ticker: entity.asset,
             quantity: entity.quantity,
-            price: entity.price
+            price: entity.price,
+            openAmount: entity.openAmount
         )
     }
 

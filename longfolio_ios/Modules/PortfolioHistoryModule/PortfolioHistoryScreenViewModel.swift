@@ -20,16 +20,16 @@ final class PortfolioHistoryScreenViewModel {
     
     private var portfolio: Portfolio
     
-    var selectedDate = Date()
+    var selectedDate = Date().addingTimeInterval(-24 * 60 * 60)
     var selectedSnapshot: PortfolioSnapshot?
     
     init(dependencyContainer: DIContainer, portfolio: Portfolio) {
         self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.portfolio = portfolio
-        self.portfolioSnapshotDataManager = SnapshotDataManager(dataBase: dataBase, networkService: dependencyContainer.eodhdNetworkService)
-        
-        loadData()
+        self.portfolioSnapshotDataManager = SnapshotDataManager(
+            dataBase: dataBase, networkService: dependencyContainer.eodhdNetworkService
+        )
     }
     
     func selectPreviousDay() {
@@ -48,17 +48,18 @@ final class PortfolioHistoryScreenViewModel {
         selectedDate = date
     }
     
-    private func loadData() {
+    func loadData() async {
         if let data = portfolio.snaphots.first(where: { calendar.isDate($0.date, inSameDayAs: selectedDate) }) {
             self.selectedSnapshot = data
         }
         
         do {
-            let snapshot = try portfolioSnapshotDataManager.getOrFetchSnapshot(for: selectedDate, name: portfolio.name)
+            let snapshot = try await portfolioSnapshotDataManager.getOrFetchSnapshot(
+                for: selectedDate, portfolio: portfolio
+            )
             self.selectedSnapshot = snapshot
         } catch {
-            
+            print(error)
         }
-        
     }
 }

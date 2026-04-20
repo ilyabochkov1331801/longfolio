@@ -57,5 +57,8 @@ struct PortfolioHistoryScreenView: View {
             .listStyle(.insetGrouped)
         }
         .background(Color(.systemGroupedBackground))
+        .task {
+            await viewModel.loadData()
+        }
     }
 }

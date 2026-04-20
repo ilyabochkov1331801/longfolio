@@ -14,17 +14,20 @@ final class PositionSnapshotEntity {
     var asset: AssetTicker
     var quantity: Double
     var price: Amount
+    var openAmount: Amount
     var portfolio: PortfolioSnapshotEntity
     
     init(
         asset: AssetTicker,
         quantity: Double,
         price: Amount,
+        openAmount: Amount,
         portfolio: PortfolioSnapshotEntity
     ) {
         self.asset = asset
         self.quantity = quantity
         self.price = price
+        self.openAmount = openAmount
         self.portfolio = portfolio
     }
 }
