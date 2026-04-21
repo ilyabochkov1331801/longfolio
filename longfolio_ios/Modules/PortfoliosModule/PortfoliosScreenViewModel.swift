@@ -28,6 +28,7 @@ final class PortfoliosScreenViewModel {
     var convertedAmounts: [String: [Double]] = [:]
     var totalAmount: [Amount]?
     var convertedTotalAmount: Double = 0.0
+    var defaultCurrency: Currency = .unknown
     
     init(dependencyContainer: DIContainer) {
         self.contextManager = dependencyContainer.contextManager
@@ -79,7 +80,8 @@ extension PortfoliosScreenViewModel {
     func convertAmount() {
         Task {
             do {
-                var defaultCurrency = try settingsProvider.getDefaultCurrency()
+                let defaultCurrency = try settingsProvider.getDefaultCurrency()
+                self.defaultCurrency = defaultCurrency
                 convertedTotalAmount = try await currencyProvider.convert(to: defaultCurrency, amount: totalAmount ?? [])
             } catch {
                 

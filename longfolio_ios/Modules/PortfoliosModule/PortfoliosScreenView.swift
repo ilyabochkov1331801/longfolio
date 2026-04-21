@@ -84,16 +84,13 @@ struct PortfoliosScreenView: View {
                             ForEach(totalAmount, id: \.currency) { amount in
                                 AmountView(amount: amount)
                             }
+                            Text("\(viewModel.defaultCurrency.rawValue.uppercased()):\(viewModel.convertedTotalAmount)")
+                                .foregroundStyle(.secondary)
                         }
                     } else {
                         ProgressView()
                             .padding()
                     }
-                    
-                    Spacer()
-                    
-                    Text("\(viewModel.convertedTotalAmount)")
-                        .foregroundStyle(.secondary)
                 }
                 .padding()
             }
