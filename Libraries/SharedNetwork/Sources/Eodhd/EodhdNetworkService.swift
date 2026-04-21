@@ -14,6 +14,7 @@ public protocol EodhdNetworkServiceProtocol: Sendable, NetworkService {
         for ticker: String, exchange: String, fromDate: Date, toDate: Date
     ) async throws -> [EodhdAssetDayPrice]
     func realTimeAssetPriceTask(for ticker: String, exchange: String) -> Task<EodhdRealtimeAssetPrice, Error>
+    func currencyRate(pair: String) async throws -> EodhdCurrencyRate
 }
 
 public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkServiceProtocol {
@@ -49,5 +50,9 @@ public final class EodhdNetworkService: NetworkServiceTrait, EodhdNetworkService
         try await execute(
             request: EodhdEndpoint.realtimeAssetPrice(ticker: ticker, exchange: exchange)
         )
+    }
+    
+    public func currencyRate(pair: String) async throws -> EodhdCurrencyRate {
+        try await execute(request: EodhdEndpoint.currencyRate(pair: pair)).value
     }
 }

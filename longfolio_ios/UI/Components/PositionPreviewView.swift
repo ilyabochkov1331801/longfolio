@@ -42,7 +42,7 @@ struct PositionPreviewView: View {
 
                 Spacer()
 
-                Text(quantity, format: .number.precision(.fractionLength(2)))
+                Text(quantity, format: .number)
                     .font(.body.weight(.medium))
             }
 

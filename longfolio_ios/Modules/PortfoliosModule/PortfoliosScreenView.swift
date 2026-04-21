@@ -89,6 +89,11 @@ struct PortfoliosScreenView: View {
                         ProgressView()
                             .padding()
                     }
+                    
+                    Spacer()
+                    
+                    Text("\(viewModel.convertedTotalAmount)")
+                        .foregroundStyle(.secondary)
                 }
                 .padding()
             }
