@@ -9,6 +9,7 @@ import Foundation
 import SharedModels
 import SwiftData
 
+@MainActor
 public protocol ManagesTransactionsData {
     func createCashTransaction(
         for portfolioName: String,

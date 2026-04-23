@@ -14,6 +14,7 @@ public protocol ProvidesCurrency {
     func getCurrencyRate(from: Currency, to: Currency, date: Date) async throws -> Double
 }
 
+@MainActor
 public final class CurrencyProvider: ProvidesCurrency {
     private let frankfurterNetworkService: FrankfurterNetworkServiceProtocol
     private let dataBase: SwiftDataBaseProtocol

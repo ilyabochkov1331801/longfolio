@@ -10,6 +10,7 @@ import SwiftData
 import SharedModels
 import SharedNetwork
 
+@MainActor
 public protocol ManagesSnapshotData {
     func getOrFetchSnapshot(for date: Date, portfolio: Portfolio) async throws -> PortfolioSnapshot
 }

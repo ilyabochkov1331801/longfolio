@@ -7,6 +7,7 @@
 
 import SwiftData
 
+@MainActor
 public protocol SwiftDataBaseProtocol {
     func fetch<T: PersistentModel>(descriptor: FetchDescriptor<T>) throws -> [T]
     func insert<T: PersistentModel>(entity: T)
