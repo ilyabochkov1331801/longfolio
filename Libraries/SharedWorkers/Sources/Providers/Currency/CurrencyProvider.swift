@@ -7,47 +7,37 @@
 
 import Foundation
 import SharedModels
+import SwiftData
 import SharedNetwork
 
 public protocol ProvidesCurrency {
-    func convert(to: Currency, amount: [Amount]) async throws -> Double
-    func convert(from: Currency, to: Currency, amount: Double) async throws -> Double
+    func getCurrencyRate(from: Currency, to: Currency, date: Date) async throws -> Double
 }
 
 public final class CurrencyProvider: ProvidesCurrency {
-    private let eodhdNetworkService: EodhdNetworkServiceProtocol
-    private var currencyRates: [String: Double] = [:]
+    private let frankfurterNetworkService: FrankfurterNetworkServiceProtocol
+    private let dataBase: SwiftDataBaseProtocol
     
-    public init(eodhdNetworkService: EodhdNetworkServiceProtocol) {
-        self.eodhdNetworkService = eodhdNetworkService
+    public init(frankfurterNetworkService: FrankfurterNetworkServiceProtocol, dataBase: SwiftDataBaseProtocol) {
+        self.frankfurterNetworkService = frankfurterNetworkService
+        self.dataBase = dataBase
     }
     
-    public func convert(to: Currency, amount: [Amount]) async throws -> Double {
-        var summ = 0.0
-        for amt in amount {
-            if amt.currency == to {
-                summ += amt.value
-            } else {
-                let rate = try await getCurrencyRate(from: amt.currency, to: to)
-                summ += amt.value * rate
-            }
-        }
-        return summ
-    }
-    
-    public func convert(from: Currency, to: Currency, amount: Double) async throws -> Double {
-        let rate = try await getCurrencyRate(from: from, to: to)
-        return amount * rate
-    }
-    
-    private func getCurrencyRate(from: Currency, to: Currency) async throws -> Double {
-        let pair = "\(from.rawValue)\(to.rawValue)"
-        if let rate = currencyRates[pair] {
-            return rate
+    public func getCurrencyRate(from: Currency, to: Currency, date: Date) async throws -> Double {
+        let descriptor = FetchDescriptor<CurrencyEntity>(
+            predicate: #Predicate { $0.base == from.rawValue && $0.quote == to.rawValue }
+        )
+
+        
+        if let currency = try dataBase.fetch(descriptor: descriptor).first(where: { $0.date.isSameDay(with: date) }) {
+            return currency.rate
         }
         
-        let currencyRate = try await eodhdNetworkService.currencyRate(pair: pair)
-        currencyRates[pair] = currencyRate.close
-        return currencyRate.close
+        let currencyRate = try await frankfurterNetworkService.currencyRate(from: from.rawValue, to: to.rawValue, date: date)
+        let currencyRateEntity = CurrencyEntity(date: date, base: from.rawValue, quote: to.rawValue, rate: currencyRate.rate)
+        dataBase.insert(entity: currencyRateEntity)
+        try dataBase.save()
+        
+        return currencyRate.rate
     }
 }

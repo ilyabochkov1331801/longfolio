@@ -12,7 +12,6 @@ enum EodhdEndpoint: URLRequestConvertible {
     case searchAssets(query: String)
     case assetPrices(ticker: String, exchange: String, from: String, to: String)
     case realtimeAssetPrice(ticker: String, exchange: String)
-    case currencyRate(pair: String)
     
     func asURLRequest() throws -> URLRequest {
         let url = try Constants.endpoint.asURL()
@@ -35,14 +34,14 @@ enum EodhdEndpoint: URLRequestConvertible {
 private extension EodhdEndpoint {
     var method: HTTPMethod {
         switch self {
-        case .searchAssets, .realtimeAssetPrice, .assetPrices, .currencyRate:
+        case .searchAssets, .realtimeAssetPrice, .assetPrices:
             return .get
         }
     }
     
     var parameters: Parameters? {
         switch self {
-        case .searchAssets, .realtimeAssetPrice, .currencyRate:
+        case .searchAssets, .realtimeAssetPrice:
             return [
                 "api_token": Constants.apiToken,
                 "fmt": "json"
@@ -65,8 +64,6 @@ private extension EodhdEndpoint {
             return "/eod/\(ticker).\(exchange)"
         case let .realtimeAssetPrice(ticker, exchange):
             return "/real-time/\(ticker).\(exchange)"
-        case let .currencyRate(pair):
-            return "/real-time/\(pair).FOREX"
         }
     }
 }
