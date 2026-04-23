@@ -36,6 +36,7 @@ final class SwiftDataModelsMapper {
             type: entity.type,
             quantity: entity.quantity,
             amount: entity.amount,
+            commision: entity.commision,
             asset: makeAsset(from: entity.asset)
         )
     }
@@ -53,7 +54,8 @@ final class SwiftDataModelsMapper {
             id: entity.id,
             date: entity.date,
             asset: makeAsset(from: entity.asset),
-            amount: entity.amount
+            amount: entity.amount,
+            paidTaxes: entity.paidTaxes
         )
     }
 
