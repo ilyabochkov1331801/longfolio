@@ -81,9 +81,11 @@ struct PortfoliosScreenView: View {
                     
                     if let totalAmount = viewModel.totalAmount {
                         VStack(alignment: .trailing) {
-                            ForEach(totalAmount, id: \.currency) { amount in
-                                AmountView(amount: amount)
-                            }
+                            ConvertedAmountView(viewModel: .init(
+                                diContatiner: dependencyContainer,
+                                amount: totalAmount,
+                                convertedDate: Date()
+                            ))
                         }
                     } else {
                         ProgressView()

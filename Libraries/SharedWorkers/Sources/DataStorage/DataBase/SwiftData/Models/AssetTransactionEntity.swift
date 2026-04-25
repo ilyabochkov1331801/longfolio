@@ -21,6 +21,7 @@ final class AssetTransactionEntity {
     var type: AssetTransactionType
     var quantity: Double
     var amount: Amount
+    var commision: Amount
     var portfolio: PortfolioEntity
     
     init(
@@ -30,6 +31,7 @@ final class AssetTransactionEntity {
         asset: AssetEntity,
         quantity: Double,
         amount: Amount,
+        commision: Amount,
         portfolio: PortfolioEntity
     ) {
         self.id = id
@@ -38,6 +40,7 @@ final class AssetTransactionEntity {
         self.asset = asset
         self.quantity = quantity
         self.amount = amount
+        self.commision = commision
         self.portfolio = portfolio
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 import SharedModels
 import SwiftData
 
+@MainActor
 public protocol ManagesTransactionsData {
     func createCashTransaction(
         for portfolioName: String,
@@ -19,8 +20,8 @@ public protocol ManagesTransactionsData {
     func createDividendTransaction(
         for portfolioName: String,
         asset: Asset,
-        quantity: Double,
         amount: Amount,
+        paidTaxes: Amount,
         date: Date
     ) throws
     
@@ -30,6 +31,7 @@ public protocol ManagesTransactionsData {
         type: AssetTransactionType,
         quantity: Double,
         amount: Amount,
+        commision: Amount,
         date: Date
     ) throws
 }
@@ -82,8 +84,8 @@ public final class TransactionsDataManager: ManagesTransactionsData {
     public func createDividendTransaction(
         for portfolioName: String,
         asset: Asset,
-        quantity: Double,
         amount: Amount,
+        paidTaxes: Amount,
         date: Date
     ) throws {
         let portfolioDescriptor = FetchDescriptor<PortfolioEntity>(
@@ -100,8 +102,8 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             id: UUID().uuidString,
             date: date,
             asset: assetEntity,
-            quantity: quantity,
             amount: amount,
+            paidTaxes: paidTaxes,
             portfolio: portfolio
         )
 
@@ -121,6 +123,7 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         type: AssetTransactionType,
         quantity: Double,
         amount: Amount,
+        commision: Amount,
         date: Date
     ) throws {
         let portfolioDescriptor = FetchDescriptor<PortfolioEntity>(
@@ -140,6 +143,7 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             asset: assetEntity,
             quantity: quantity,
             amount: amount,
+            commision: commision,
             portfolio: portfolio
         )
 

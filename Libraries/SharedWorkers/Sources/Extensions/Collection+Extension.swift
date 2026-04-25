@@ -6,7 +6,8 @@
 //
 
 extension Collection {
-    func asyncMap<T>(transform: (Element) async throws -> T) async rethrows -> [T] {
+    @MainActor
+    func asyncMap<T>(transform: @MainActor (Element) async throws -> T) async rethrows -> [T] {
         var result: [T] = []
         for element in self {
             let res = try await transform(element)

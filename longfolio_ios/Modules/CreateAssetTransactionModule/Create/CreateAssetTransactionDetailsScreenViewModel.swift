@@ -63,6 +63,7 @@ extension CreateAssetTransactionDetailsScreenViewModel {
                 type: type,
                 quantity: quantity,
                 amount: Amount(value: amount, currency: asset.currency),
+                commision: Amount(value: 0, currency: asset.currency), // TODO: Добавить комиссии
                 date: date
             )
             return true

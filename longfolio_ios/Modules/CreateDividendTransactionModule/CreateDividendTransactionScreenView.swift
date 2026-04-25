@@ -23,12 +23,12 @@ struct CreateDividendTransactionScreenView: View {
                         Picker(
                             "Ticker",
                             selection: Binding(
-                                get: { viewModel.selectedTicker ?? viewModel.positions.first!.asset.ticker },
-                                set: { viewModel.selectedTicker = $0 }
+                                get: { viewModel.selectedAsset ?? viewModel.positions.first!.asset },
+                                set: { viewModel.selectedAsset = $0 }
                             )
                         ) {
-                            ForEach(viewModel.positions, id: \.asset.ticker) { position in
-                                Text(position.asset.ticker.ticker).tag(position.asset.ticker)
+                            ForEach(viewModel.positions, id: \.asset) { position in
+                                Text(position.asset.ticker.ticker).tag(position.asset)
                             }
                         }
                     }
