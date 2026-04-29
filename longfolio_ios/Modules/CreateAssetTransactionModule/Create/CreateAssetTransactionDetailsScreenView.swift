@@ -44,7 +44,8 @@ struct CreateAssetTransactionDetailsScreenView: View {
                         Text("Buy").tag(AssetTransactionType.buy)
                         Text("Sell").tag(
                             AssetTransactionType.sell(
-                                profit: Amount(value: viewModel.profite, currency: viewModel.asset.currency)
+                                profit: Amount(value: 0, currency: viewModel.asset.currency),
+                                closedLots: []
                             )
                         )
                     }

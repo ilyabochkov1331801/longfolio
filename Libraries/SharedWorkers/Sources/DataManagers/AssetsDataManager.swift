@@ -9,6 +9,7 @@ import Foundation
 import SharedModels
 import SwiftData
 
+@MainActor
 public protocol ManagesAssetsData {
     func fetchAsset(for ticker: AssetTicker) throws -> Asset?
     func saveAsset(_ asset: Asset) throws -> Asset

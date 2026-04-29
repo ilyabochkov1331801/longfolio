@@ -44,7 +44,7 @@ final class PortfolioDetailsScreenViewModel {
         )
         
         self.portfolio = portfolio
-        positionsForDisplaying = Array(portfolio.positions.sorted(by: { $0.openAmount < $1.openAmount }).prefix(5))
+        positionsForDisplaying = Array(portfolio.positions.prefix(5))
         canShowMorePositions = portfolio.positions.count > 2
         setupBindings()
     }
@@ -67,7 +67,7 @@ extension PortfolioDetailsScreenViewModel {
             }
 
             self.portfolio = portfolio
-            positionsForDisplaying = Array(portfolio.positions.sorted(by: { $0.openAmount < $1.openAmount }).prefix(2))
+            positionsForDisplaying = Array(portfolio.positions.prefix(2))
             canShowMorePositions = portfolio.positions.count > 2
             await loadAmounts()
         } catch {
@@ -82,10 +82,11 @@ extension PortfolioDetailsScreenViewModel {
             
             for position in portfolio.positions {
                 let price = try await realtimePricesProvider.realtimePrice(for: position)
-                let profit = Amount(value: price.value - position.openAmount.value, currency: price.currency)
+                //let positionOpenAmount = AmountCalculator.sum(of: position.lots.map(\.openAmount))
+                //let profit = Amount(value: price.value - positionOpenAmount.value, currency: price.currency)
                 
                 positionsAmount[position.asset] = price
-                positionsProfit[position.asset] = profit
+                positionsProfit[position.asset] = Amount(value: 0, currency: .eur)
             }
         } catch {
 

@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 import SharedModels
 
+@MainActor
 public protocol ManagesPortfolioData {
     func fetchPortfolios() throws -> [Portfolio]
     func fetchPortfolio(with name: String) throws -> Portfolio?
@@ -45,7 +46,8 @@ public final class PortfolioDataManager: ManagesPortfolioData {
         let portfolio = PortfolioEntity(
             name: name,
             cashAmount: [],
-            assetsTransactions: [],
+            buyAssetsTransactions: [],
+            sellAssetsTransactions: [],
             dividendTransactions: [],
             cashTransactions: [],
             positions: [],

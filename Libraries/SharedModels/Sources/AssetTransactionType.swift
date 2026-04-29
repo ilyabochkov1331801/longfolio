@@ -7,5 +7,5 @@
 
 public enum AssetTransactionType: Equatable, Hashable, Codable, Sendable {
     case buy
-    case sell(profit: Amount)
+    case sell(profit: Amount, closedLots: [AssetLot])
 }

@@ -21,7 +21,7 @@ public struct PortfolioStatisticsDataManager {
     
     public func openPositionsProfit(in portfolio: Portfolio) async throws -> [Amount] {
         let positionsAmount = try await realtimePricesProvider.positionsRealtimePrice(in: portfolio)
-        let positionsHolding = portfolio.positions.map(\.openAmount)
+        let positionsHolding = portfolio.positions.flatMap { $0.lots.map(\.openAmount) }
         return AmountCalculator.difference(of: positionsAmount, taken: positionsHolding)
     }
 }
