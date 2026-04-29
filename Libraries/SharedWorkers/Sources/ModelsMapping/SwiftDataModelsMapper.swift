@@ -13,7 +13,7 @@ final class SwiftDataModelsMapper {
         Portfolio(
             name: entity.name,
             cashAmount: entity.cashAmount,
-            assetsTransactions: entity.assetsTransactions.map(makeAssetTransaction),
+            assetsTransactions: entity.buyAssetsTransactions.map(makeBuyAssetTransaction) + entity.sellAssetsTransactions.map(makeSellAssetTransaction),
             cashTransactions: entity.cashTransactions.map(makeCashTransaction),
             dividendsTransactions: entity.dividendTransactions.map(makeDividendTransaction),
             positions: entity.positions.map(makePosition),
@@ -29,11 +29,23 @@ final class SwiftDataModelsMapper {
         )
     }
 
-    func makeAssetTransaction(from entity: AssetTransactionEntity) -> AssetTransaction {
+    func makeBuyAssetTransaction(from entity: BuyAssetTransactionEntity) -> AssetTransaction {
         AssetTransaction(
             id: entity.id,
             date: entity.date,
-            type: entity.type,
+            type: .buy,
+            quantity: entity.quantity,
+            amount: entity.amount,
+            commision: entity.commision,
+            asset: makeAsset(from: entity.asset)
+        )
+    }
+    
+    func makeSellAssetTransaction(from entity: SellAssetTransactionEntity) -> AssetTransaction {
+        AssetTransaction(
+            id: entity.id,
+            date: entity.date,
+            type: .sell(profit: entity.profit, closedLots: entity.closedLots.map(makeAssetLot)),
             quantity: entity.quantity,
             amount: entity.amount,
             commision: entity.commision,
@@ -61,6 +73,15 @@ final class SwiftDataModelsMapper {
 
     func makePosition(from entity: PositionEntity) -> Position {
         Position(
+            asset: makeAsset(from: entity.asset),
+            lots: entity.lots.map(makeAssetLot)
+        )
+    }
+    
+    func makeAssetLot(from entity: AssetLotEntity) -> AssetLot {
+        AssetLot(
+            id: entity.id,
+            date: entity.date,
             asset: makeAsset(from: entity.asset),
             quantity: entity.quantity,
             openAmount: entity.openAmount

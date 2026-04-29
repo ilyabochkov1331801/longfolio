@@ -32,7 +32,9 @@ public final class SwiftDataContextManager: ManagesSwiftDataContext {
             models: [
                 AssetEntity.self,
                 AssetDayPriceEntity.self,
-                AssetTransactionEntity.self,
+                BuyAssetTransactionEntity.self,
+                SellAssetTransactionEntity.self,
+                AssetLotEntity.self,
                 CurrencyEntity.self,
                 CashTransactionEntity.self,
                 DividendTransactionEntity.self,

@@ -18,7 +18,7 @@ struct PositionPreviewView: View {
     init(position: Position, amount: Amount?, profit: Amount?) {
         self.ticker = position.asset.ticker.ticker
         self.exchange = position.asset.ticker.exchange.code
-        self.quantity = position.quantity
+        self.quantity = position.lots.reduce(0, { $0 + $1.quantity })
         self.amount = amount
         self.profit = profit
     }

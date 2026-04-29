@@ -46,7 +46,8 @@ public final class PortfolioDataManager: ManagesPortfolioData {
         let portfolio = PortfolioEntity(
             name: name,
             cashAmount: [],
-            assetsTransactions: [],
+            buyAssetsTransactions: [],
+            sellAssetsTransactions: [],
             dividendTransactions: [],
             cashTransactions: [],
             positions: [],

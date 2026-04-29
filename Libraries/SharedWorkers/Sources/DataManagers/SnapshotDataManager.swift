@@ -52,41 +52,41 @@ public final class SnapshotDataManager: ManagesSnapshotData {
         var amounts: [Amount] = cashTransactions.map(\.amount) + dividendsTransactions.map(\.amount)
         var positions: [Asset: Position] = [:]
         
-        for transaction in assetsTransactions {
-            if let position = positions[transaction.asset] {
-                let newQuantity: Double
-                let newOpenAmount: Amount
-                
-                switch transaction.type {
-                case .buy:
-                    newQuantity = position.quantity + transaction.quantity
-                    newOpenAmount = Amount(
-                        value: position.openAmount.value + transaction.amount.value,
-                        currency: position.asset.currency
-                    )
-                    amounts.append(
-                        Amount(value: -transaction.amount.value, currency: transaction.amount.currency)
-                    )
-                case let .sell(profit):
-                    newQuantity = position.quantity - transaction.quantity
-                    newOpenAmount = Amount(
-                        value: position.openAmount.value - transaction.amount.value + profit.value,
-                        currency: position.asset.currency
-                    )
-                    amounts.append(transaction.amount)
-                }
-                
-                positions[transaction.asset] = Position(
-                    asset: position.asset, quantity: newQuantity, openAmount: newOpenAmount
-                )
-            } else {
-                positions[transaction.asset] = Position(
-                    asset: transaction.asset,
-                    quantity: transaction.quantity,
-                    openAmount: transaction.amount
-                )
-            }
-        }
+//        for transaction in assetsTransactions {
+//            if let position = positions[transaction.asset] {
+//                let newQuantity: Double
+//                let newOpenAmount: Amount
+//                
+//                switch transaction.type {
+//                case .buy:
+//                    newQuantity = position.quantity + transaction.quantity
+//                    newOpenAmount = Amount(
+//                        value: position.openAmount.value + transaction.amount.value,
+//                        currency: position.asset.currency
+//                    )
+//                    amounts.append(
+//                        Amount(value: -transaction.amount.value, currency: transaction.amount.currency)
+//                    )
+//                case let .sell(profit):
+//                    newQuantity = position.quantity - transaction.quantity
+//                    newOpenAmount = Amount(
+//                        value: position.openAmount.value - transaction.amount.value + profit.value,
+//                        currency: position.asset.currency
+//                    )
+//                    amounts.append(transaction.amount)
+//                }
+//                
+//                positions[transaction.asset] = Position(
+//                    asset: position.asset, quantity: newQuantity, openAmount: newOpenAmount
+//                )
+//            } else {
+//                positions[transaction.asset] = Position(
+//                    asset: transaction.asset,
+//                    quantity: transaction.quantity,
+//                    openAmount: transaction.amount
+//                )
+//            }
+//        }
         
         let porfolioEntity = try portfolioEntity(from: portfolio)
         let cashAmount = AmountCalculator.sum(of: amounts)
@@ -98,23 +98,25 @@ public final class SnapshotDataManager: ManagesSnapshotData {
             cache: cashAmount,
             portfolio: porfolioEntity
         )
-        let positionEntities = try await positions.values.asyncMap {
-            let price = try await assetPrice(asset: $0.asset, for: date)
-            let positionEntity = PositionSnapshotEntity(
-                asset: $0.asset.ticker,
-                quantity: $0.quantity,
-                price: Amount(value: $0.quantity * price.value, currency: price.currency),
-                openAmount: $0.openAmount,
-                portfolio: portfolioSnaphotEntity
-            )
-            dataBase.insert(entity: positionEntity)
-            return positionEntity
-        }
-        portfolioSnaphotEntity.positions.append(contentsOf: positionEntities)
-        dataBase.insert(entity: portfolioSnaphotEntity)
-        try dataBase.save()
+//        let positionEntities = try await positions.values.asyncMap {
+//            let price = try await assetPrice(asset: $0.asset, for: date)
+//            let positionEntity = PositionSnapshotEntity(
+//                asset: $0.asset.ticker,
+//                quantity: $0.quantity,
+//                price: Amount(value: $0.quantity * price.value, currency: price.currency),
+//                openAmount: $0.openAmount,
+//                portfolio: portfolioSnaphotEntity
+//            )
+//            dataBase.insert(entity: positionEntity)
+//            return positionEntity
+//        }
+//        portfolioSnaphotEntity.positions.append(contentsOf: positionEntities)
+//        dataBase.insert(entity: portfolioSnaphotEntity)
+//        try dataBase.save()
+//        
+//        return mapper.makePortfolioSnapshot(from: portfolioSnaphotEntity)
         
-        return mapper.makePortfolioSnapshot(from: portfolioSnaphotEntity)
+        return PortfolioSnapshot(positions: [], date: Date(), name: "", cache: [])
     }
 
     private func portfolioEntity(from portfolio: Portfolio) throws -> PortfolioEntity {
