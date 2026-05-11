@@ -67,19 +67,31 @@ struct TransactionsScreenView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(viewModel.portfolio.assetsTransactions, id: \.id) { transaction in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(String(describing: transaction.type).capitalized)
-                                .font(.headline)
-                            Text(transaction.date, style: .date)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(assetTransactionTitle(transaction))
+                                    .font(.headline)
+                                Text(assetTransactionSubtitle(transaction))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            VStack(alignment: .trailing, spacing: 4) {
+                                AmountView(amount: transaction.amount)
+                                if let profit = transaction.type.realizedProfit {
+                                    ProfitAmountView(profit: profit)
+                                }
+                            }
+                        }
+
+                        if transaction.type.isSell {
+                            Text(sellDetails(for: transaction))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-
-                        Spacer()
-
-                        Text(transaction.amount.value, format: .number.precision(.fractionLength(2)))
-                            .font(.body.weight(.medium))
                     }
                 }
             }
@@ -111,5 +123,19 @@ struct TransactionsScreenView: View {
                 }
             }
         }
+    }
+
+    private func assetTransactionTitle(_ transaction: AssetTransaction) -> String {
+        "\(transaction.type.isSell ? "Sell" : "Buy") \(transaction.asset.ticker.ticker)"
+    }
+
+    private func assetTransactionSubtitle(_ transaction: AssetTransaction) -> String {
+        let quantity = transaction.quantity.formatted(.number)
+        return "\(quantity) units • \(transaction.date.formatted(date: .abbreviated, time: .omitted))"
+    }
+
+    private func sellDetails(for transaction: AssetTransaction) -> String {
+        let closedLots = transaction.type.closedLots.count
+        return "Closed \(closedLots) lot\(closedLots == 1 ? "" : "s")"
     }
 }

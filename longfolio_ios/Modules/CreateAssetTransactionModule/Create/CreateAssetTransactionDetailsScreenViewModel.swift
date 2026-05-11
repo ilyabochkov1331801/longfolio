@@ -11,6 +11,14 @@ import SharedWorkers
 
 @Observable
 final class CreateAssetTransactionDetailsScreenViewModel {
+    enum TransactionKind: String, CaseIterable, Identifiable {
+        case buy
+        case sell
+
+        var id: Self { self }
+        var title: String { rawValue.capitalized }
+    }
+
     private let assetsDataManager: ManagesAssetsData
     private let transactionsDataManager: ManagesTransactionsData
     private let realtimePricesProvider: ProvidesRealtimePrices
@@ -18,11 +26,10 @@ final class CreateAssetTransactionDetailsScreenViewModel {
 
     let asset: Asset
     var currentPrice: Amount?
-    var type: AssetTransactionType = .buy
+    var transactionKind: TransactionKind = .buy
     var date: Date = .now
     var amount: Double = 0
     var quantity: Double = 0
-    var profite: Double = 0
     var error: String?
 
     var canSave: Bool {
@@ -57,7 +64,7 @@ extension CreateAssetTransactionDetailsScreenViewModel {
 
         do {
             let asset = try assetsDataManager.saveAsset(asset)
-            switch type {
+            switch transactionKind {
             case .buy:
                 try transactionsDataManager.createBuyAssetTransaction(
                     for: portfolioName,
@@ -81,7 +88,16 @@ extension CreateAssetTransactionDetailsScreenViewModel {
             }
             
         } catch {
-            self.error = error.localizedDescription
+            if let error = error as? TransactionsErrors {
+                switch error {
+                case .nothingToSell:
+                    self.error = "There is no open position for this asset."
+                case .notEnoughQuantity:
+                    self.error = "Not enough open lots to sell this quantity."
+                }
+            } else {
+                self.error = error.localizedDescription
+            }
             return false
         }
     }

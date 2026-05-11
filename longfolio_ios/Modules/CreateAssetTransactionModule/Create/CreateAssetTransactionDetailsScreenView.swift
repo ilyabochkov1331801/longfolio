@@ -39,15 +39,11 @@ struct CreateAssetTransactionDetailsScreenView: View {
                 Section("Transaction") {
                     Picker(
                         "Type",
-                        selection: $viewModel.type
+                        selection: $viewModel.transactionKind
                     ) {
-                        Text("Buy").tag(AssetTransactionType.buy)
-                        Text("Sell").tag(
-                            AssetTransactionType.sell(
-                                profit: Amount(value: 0, currency: viewModel.asset.currency),
-                                closedLots: []
-                            )
-                        )
+                        ForEach(CreateAssetTransactionDetailsScreenViewModel.TransactionKind.allCases) { kind in
+                            Text(kind.title).tag(kind)
+                        }
                     }
 
                     DatePicker(
@@ -77,19 +73,6 @@ struct CreateAssetTransactionDetailsScreenView: View {
                             formatter: AmountTextInputFormatter()
                         )
                     )
-                    
-                    if viewModel.type != .buy {
-                        TextInput(
-                            output: $viewModel.profite,
-                            configuration: .init(
-                                title: "Profite",
-                                placeholder: "Enter amount",
-                                hint: "Diff beetwen buy and cell",
-                                keyboardType: .decimalPad,
-                                formatter: AmountTextInputFormatter()
-                            )
-                        )
-                    }
                 }
             }
             .navigationTitle("New Asset Transaction")

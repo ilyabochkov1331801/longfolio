@@ -46,6 +46,7 @@ public protocol ManagesTransactionsData {
 
 public enum TransactionsErrors: Error {
     case nothingToSell
+    case notEnoughQuantity
 }
 
 public final class TransactionsDataManager: ManagesTransactionsData {
@@ -155,7 +156,7 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         portfolio.cashAmount = updateCashAmount(
             portfolio.cashAmount,
             with: Amount(
-                value: -amount.value,
+                value: -(amount.value + commision.value),
                 currency: amount.currency
             )
         )
@@ -166,7 +167,10 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             id: UUID(),
             asset: assetEntity,
             quantity: quantity,
-            openAmount: amount,
+            openAmount: Amount(
+                value: amount.value + commision.value,
+                currency: amount.currency
+            ),
             date: date
         )
         dataBase.insert(entity: lotEntity)
@@ -204,26 +208,39 @@ public final class TransactionsDataManager: ManagesTransactionsData {
             let portfolio = try dataBase.fetch(descriptor: portfolioDescriptor).first,
             let position = portfolio.positions.first(where: { $0.asset.ticker == asset.ticker.ticker && $0.asset.exchange.code == asset.ticker.exchange.code })
         else {
-            return
+            throw TransactionsErrors.nothingToSell
         }
 
         let assetEntity = position.asset
+        let availableQuantity = position.lots.reduce(0.0) { $0 + $1.quantity }
+
+        guard availableQuantity >= quantity else {
+            throw TransactionsErrors.notEnoughQuantity
+        }
         
         var closedLots: [AssetLotEntity] = []
         var unclosedQuantity = quantity
         for lot in position.lots.sorted(by: { $0.date < $1.date }) {
+            guard unclosedQuantity > 0 else { break }
+
             if lot.quantity > unclosedQuantity {
-                let separetedLot = AssetLotEntity(
+                let separatedLot = AssetLotEntity(
                     id: UUID(),
                     asset: assetEntity,
                     quantity: unclosedQuantity,
-                    openAmount: Amount(value: lot.openAmount.value * unclosedQuantity / lot.quantity, currency: lot.openAmount.currency),
+                    openAmount: Amount(
+                        value: lot.unitOpenAmount * unclosedQuantity,
+                        currency: lot.openAmount.currency
+                    ),
                     date: lot.date
                 )
                 lot.quantity -= unclosedQuantity
-                lot.openAmount = Amount(value: lot.openAmount.value - separetedLot.openAmount.value, currency: lot.openAmount.currency)
-                dataBase.insert(entity: separetedLot)
-                closedLots.append(separetedLot)
+                lot.openAmount = Amount(
+                    value: lot.openAmount.value - separatedLot.openAmount.value,
+                    currency: lot.openAmount.currency
+                )
+                dataBase.insert(entity: separatedLot)
+                closedLots.append(separatedLot)
                 break
             } else {
                 closedLots.append(lot)
@@ -233,7 +250,10 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         }
         
         let closedLotsOpenAmount = closedLots.reduce(0, { $0 + $1.openAmount.value })
-        let profit = Amount(value: amount.value - closedLotsOpenAmount, currency: amount.currency)
+        let profit = Amount(
+            value: amount.value - commision.value - closedLotsOpenAmount,
+            currency: amount.currency
+        )
         
         let transaction = SellAssetTransactionEntity(
             id: UUID().uuidString,
@@ -250,12 +270,16 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         portfolio.cashAmount = updateCashAmount(
             portfolio.cashAmount,
             with: Amount(
-                value: amount.value,
+                value: amount.value - commision.value,
                 currency: amount.currency
             )
         )
         portfolio.sellAssetsTransactions.append(transaction)
         dataBase.insert(entity: transaction)
+
+        if position.lots.isEmpty {
+            dataBase.delete(entity: position)
+        }
         
         try dataBase.save()
     }

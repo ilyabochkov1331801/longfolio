@@ -79,14 +79,16 @@ extension PortfolioDetailsScreenViewModel {
         do {
             totalAmount = try await portfolioStatisticsManager.totalAmount(in: portfolio)
             profitAmount = try await portfolioStatisticsManager.openPositionsProfit(in: portfolio)
+            positionsAmount.removeAll()
+            positionsProfit.removeAll()
             
             for position in portfolio.positions {
                 let price = try await realtimePricesProvider.realtimePrice(for: position)
-                //let positionOpenAmount = AmountCalculator.sum(of: position.lots.map(\.openAmount))
-                //let profit = Amount(value: price.value - positionOpenAmount.value, currency: price.currency)
-                
                 positionsAmount[position.asset] = price
-                positionsProfit[position.asset] = Amount(value: 0, currency: .eur)
+                positionsProfit[position.asset] = Amount(
+                    value: price.value - position.openAmount.value,
+                    currency: price.currency
+                )
             }
         } catch {
 

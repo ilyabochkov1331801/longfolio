@@ -23,6 +23,13 @@ public struct AssetLot: Equatable, Hashable, Sendable, Codable {
     }
 }
 
+public extension AssetLot {
+    var unitOpenAmount: Double {
+        guard quantity != 0 else { return 0 }
+        return openAmount.value / quantity
+    }
+}
+
 public struct Position: Equatable, Hashable, Sendable {
     public let asset: Asset
     public let lots: [AssetLot]
@@ -30,5 +37,22 @@ public struct Position: Equatable, Hashable, Sendable {
     public init(asset: Asset, lots: [AssetLot]) {
         self.asset = asset
         self.lots = lots
+    }
+}
+
+public extension Position {
+    var quantity: Double {
+        lots.reduce(0) { $0 + $1.quantity }
+    }
+
+    var openAmount: Amount {
+        Amount(
+            value: lots.reduce(0) { $0 + $1.openAmount.value },
+            currency: asset.currency
+        )
+    }
+
+    var lotCount: Int {
+        lots.count
     }
 }

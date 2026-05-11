@@ -10,10 +10,15 @@ import SharedModels
 
 final class SwiftDataModelsMapper {
     func makePortfolio(from entity: PortfolioEntity) -> Portfolio {
-        Portfolio(
+        let assetTransactions = (
+            entity.buyAssetsTransactions.map(makeBuyAssetTransaction) +
+            entity.sellAssetsTransactions.map(makeSellAssetTransaction)
+        ).sorted(by: { $0.date > $1.date })
+
+        return Portfolio(
             name: entity.name,
             cashAmount: entity.cashAmount,
-            assetsTransactions: entity.buyAssetsTransactions.map(makeBuyAssetTransaction) + entity.sellAssetsTransactions.map(makeSellAssetTransaction),
+            assetsTransactions: assetTransactions,
             cashTransactions: entity.cashTransactions.map(makeCashTransaction),
             dividendsTransactions: entity.dividendTransactions.map(makeDividendTransaction),
             positions: entity.positions.map(makePosition),

@@ -28,6 +28,13 @@ final class AssetLotEntity {
     }
 }
 
+extension AssetLotEntity {
+    var unitOpenAmount: Double {
+        guard quantity != 0 else { return 0 }
+        return openAmount.value / quantity
+    }
+}
+
 @Model
 final class PositionEntity {
     var asset: AssetEntity

@@ -11,6 +11,7 @@ import SharedModels
 struct PositionPreviewView: View {
     private let ticker: String
     private let exchange: String
+    private let lotCount: Int
     private let quantity: Double
     private let amount: Amount?
     private let profit: Amount?
@@ -18,7 +19,8 @@ struct PositionPreviewView: View {
     init(position: Position, amount: Amount?, profit: Amount?) {
         self.ticker = position.asset.ticker.ticker
         self.exchange = position.asset.ticker.exchange.code
-        self.quantity = position.lots.reduce(0, { $0 + $1.quantity })
+        self.lotCount = position.lotCount
+        self.quantity = position.quantity
         self.amount = amount
         self.profit = profit
     }
@@ -26,6 +28,7 @@ struct PositionPreviewView: View {
     init(position: PositionSnapshot) {
         self.ticker = position.ticker.ticker
         self.exchange = position.ticker.exchange.code
+        self.lotCount = 1
         self.quantity = position.quantity
         self.amount = position.price
         self.profit = Amount(
@@ -47,7 +50,7 @@ struct PositionPreviewView: View {
             }
 
             HStack {
-                Text(exchange)
+                Text("\(exchange) • \(lotCount) lot\(lotCount == 1 ? "" : "s")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 

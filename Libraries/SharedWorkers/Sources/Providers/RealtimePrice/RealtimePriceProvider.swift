@@ -51,8 +51,7 @@ public struct RealtimePricesProvider: ProvidesRealtimePrices {
     
     public func realtimePrice(for position: Position) async throws -> Amount {
         let assetPrice = try await realtimePrice(for: position.asset)
-        let quantity = position.lots.reduce(0, { $0 + $1.quantity })
-        return Amount(value: assetPrice.value * quantity, currency: assetPrice.currency)
+        return Amount(value: assetPrice.value * position.quantity, currency: assetPrice.currency)
     }
     
     public func positionsRealtimePrice(in portfolio: Portfolio) async throws -> [Amount] {
