@@ -91,6 +91,10 @@ struct TransactionsScreenView: View {
                             Text(sellDetails(for: transaction))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                        } else if transaction.commision.value > 0 {
+                            Text(commissionDetails(for: transaction))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -136,6 +140,13 @@ struct TransactionsScreenView: View {
 
     private func sellDetails(for transaction: AssetTransaction) -> String {
         let closedLots = transaction.type.closedLots.count
+        if transaction.commision.value > 0 {
+            return "Closed \(closedLots) lot\(closedLots == 1 ? "" : "s") • Commission \(transaction.commision.formatted ?? "NaN")"
+        }
         return "Closed \(closedLots) lot\(closedLots == 1 ? "" : "s")"
+    }
+
+    private func commissionDetails(for transaction: AssetTransaction) -> String {
+        "Commission \(transaction.commision.formatted ?? "NaN")"
     }
 }

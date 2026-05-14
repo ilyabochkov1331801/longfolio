@@ -29,6 +29,13 @@ public final class ConvertedAmountViewModel {
         self.amount = amount
         self.profitAmount = profitAmount
         self.convertedDate = convertedDate
+        setupBindings()
+    }
+
+    func update(amount: [Amount], profitAmount: [Amount] = [], convertedDate: Date) {
+        self.amount = amount
+        self.profitAmount = profitAmount
+        self.convertedDate = convertedDate
     }
     
     func setupData() async {

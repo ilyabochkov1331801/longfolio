@@ -9,24 +9,50 @@ import SwiftUI
 import SharedModels
 
 public struct ConvertedAmountView: View {
-    var viewModel: ConvertedAmountViewModel
+    @State private var viewModel: ConvertedAmountViewModel
+    private let amount: [Amount]
+    private let profitAmount: [Amount]
+    private let convertedDate: Date
+
+    init(viewModel: ConvertedAmountViewModel) {
+        self.amount = viewModel.amount
+        self.profitAmount = viewModel.profitAmount
+        self.convertedDate = Date()
+        _viewModel = State(initialValue: viewModel)
+    }
     
     public var body: some View {
         HStack {
             amountView
             InfoView() {
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(viewModel.amount, id: \.currency) { amount in
-                        AmountView(amount: amount)
-                    }
-                    ForEach(viewModel.profitAmount, id: \.currency) { amount in
-                        ProfitAmountView(profit: amount)
+                    ForEach(currencyRows, id: \.amount.currency) { row in
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            AmountView(amount: row.amount)
+
+                            if let profit = row.profit, profit.value != 0 {
+                                ProfitAmountView(profit: profit)
+                            }
+                        }
                     }
                 }
             }
         }
         .task {
+            viewModel.update(amount: amount, profitAmount: profitAmount, convertedDate: convertedDate)
             await viewModel.setupData()
+        }
+        .onChange(of: amount) {
+            viewModel.update(amount: amount, profitAmount: profitAmount, convertedDate: convertedDate)
+            Task {
+                await viewModel.setupData()
+            }
+        }
+        .onChange(of: profitAmount) {
+            viewModel.update(amount: amount, profitAmount: profitAmount, convertedDate: convertedDate)
+            Task {
+                await viewModel.setupData()
+            }
         }
     }
     
@@ -44,5 +70,11 @@ public struct ConvertedAmountView: View {
             }
         }
     }
-}
 
+    private var currencyRows: [(amount: Amount, profit: Amount?)] {
+        viewModel.amount.map { amount in
+            let profit = viewModel.profitAmount.first(where: { $0.currency == amount.currency })
+            return (amount: amount, profit: profit)
+        }
+    }
+}

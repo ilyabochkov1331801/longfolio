@@ -73,6 +73,17 @@ struct CreateAssetTransactionDetailsScreenView: View {
                             formatter: AmountTextInputFormatter()
                         )
                     )
+
+                    TextInput(
+                        output: $viewModel.commission,
+                        configuration: .init(
+                            title: "Commission",
+                            placeholder: "Enter commission",
+                            hint: "Broker fee in asset currency",
+                            keyboardType: .decimalPad,
+                            formatter: AmountTextInputFormatter()
+                        )
+                    )
                 }
             }
             .navigationTitle("New Asset Transaction")

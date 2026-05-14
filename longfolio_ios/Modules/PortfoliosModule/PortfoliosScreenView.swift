@@ -108,4 +108,3 @@ struct PortfoliosScreenView: View {
         }
     }
 }
-

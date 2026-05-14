@@ -29,6 +29,7 @@ final class CreateAssetTransactionDetailsScreenViewModel {
     var transactionKind: TransactionKind = .buy
     var date: Date = .now
     var amount: Double = 0
+    var commission: Double = 0
     var quantity: Double = 0
     var error: String?
 
@@ -71,7 +72,7 @@ extension CreateAssetTransactionDetailsScreenViewModel {
                     asset: asset,
                     quantity: quantity,
                     amount: Amount(value: amount, currency: asset.currency),
-                    commision: Amount(value: 0, currency: asset.currency), // TODO: Добавить комиссии
+                    commision: Amount(value: commission, currency: asset.currency),
                     date: date
                 )
                 return true
@@ -81,7 +82,7 @@ extension CreateAssetTransactionDetailsScreenViewModel {
                     asset: asset,
                     quantity: quantity,
                     amount: Amount(value: amount, currency: asset.currency),
-                    commision: Amount(value: 0, currency: asset.currency), // TODO: Добавить комиссии
+                    commision: Amount(value: commission, currency: asset.currency),
                     date: date
                 )
                 return true
