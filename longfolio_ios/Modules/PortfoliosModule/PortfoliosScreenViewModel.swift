@@ -79,7 +79,7 @@ extension PortfoliosScreenViewModel {
             do {
                 for portfolio in portfolios {
                     amounts[portfolio.name] = try await portfolioStatisticsManager.totalAmount(in: portfolio)
-                    profits[portfolio.name] = try await portfolioStatisticsManager.openPositionsProfit(in: portfolio)
+                    profits[portfolio.name] = try await portfolioStatisticsManager.totalProfit(in: portfolio)
                 }
                 totalAmount = AmountCalculator.sum(of: amounts.values.flatMap { $0 })
                 totalProfit = AmountCalculator.sum(of: profits.values.flatMap { $0 })

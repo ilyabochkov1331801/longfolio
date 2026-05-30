@@ -15,6 +15,7 @@ final class PortfolioEntity {
     var name: String
 
     var cashAmount: [Amount]
+    var realizedProfit: [Amount]
     
     @Relationship(deleteRule: .cascade, inverse: \BuyAssetTransactionEntity.portfolio)
     var buyAssetsTransactions: [BuyAssetTransactionEntity]
@@ -37,6 +38,7 @@ final class PortfolioEntity {
     init(
         name: String,
         cashAmount: [Amount],
+        realizedProfit: [Amount],
         buyAssetsTransactions: [BuyAssetTransactionEntity],
         sellAssetsTransactions: [SellAssetTransactionEntity],
         dividendTransactions: [DividendTransactionEntity],
@@ -46,6 +48,7 @@ final class PortfolioEntity {
     ) {
         self.name = name
         self.cashAmount = cashAmount
+        self.realizedProfit = realizedProfit
         self.buyAssetsTransactions = buyAssetsTransactions
         self.sellAssetsTransactions = sellAssetsTransactions
         self.dividendTransactions = dividendTransactions

@@ -78,7 +78,7 @@ extension PortfolioDetailsScreenViewModel {
     func loadAmounts() async {
         do {
             totalAmount = try await portfolioStatisticsManager.totalAmount(in: portfolio)
-            profitAmount = try await portfolioStatisticsManager.openPositionsProfit(in: portfolio)
+            profitAmount = try await portfolioStatisticsManager.totalProfit(in: portfolio)
             positionsAmount.removeAll()
             positionsProfit.removeAll()
             

@@ -9,32 +9,50 @@ import SwiftUI
 import SharedModels
 
 public struct ConvertedAmountView: View {
+    enum DisplayMode {
+        case amountAndProfit
+        case amountOnly
+        case profitOnly
+    }
+
     @State private var viewModel: ConvertedAmountViewModel
     private let amount: [Amount]
     private let profitAmount: [Amount]
     private let convertedDate: Date
+    private let displayMode: DisplayMode
+    private let showsDetails: Bool
 
-    init(viewModel: ConvertedAmountViewModel) {
+    init(
+        viewModel: ConvertedAmountViewModel,
+        displayMode: DisplayMode = .amountAndProfit,
+        showsDetails: Bool = true
+    ) {
         self.amount = viewModel.amount
         self.profitAmount = viewModel.profitAmount
         self.convertedDate = Date()
+        self.displayMode = displayMode
+        self.showsDetails = showsDetails
         _viewModel = State(initialValue: viewModel)
     }
     
     public var body: some View {
         HStack {
             amountView
-            InfoView() {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(currencyRows, id: \.amount.currency) { row in
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            AmountView(amount: row.amount)
+            
+            if showsDetails {
+                InfoView() {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(currencyRows, id: \.amount.currency) { row in
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                AmountView(amount: row.amount)
 
-                            if let profit = row.profit, profit.value != 0 {
-                                ProfitAmountView(profit: profit)
+                                if let profit = row.profit, profit.value != 0 {
+                                    ProfitAmountView(profit: profit)
+                                }
                             }
                         }
                     }
+                    .font(.body)
                 }
             }
         }
@@ -59,14 +77,29 @@ public struct ConvertedAmountView: View {
     @ViewBuilder
     private var amountView: some View {
         HStack {
-            if let amount = viewModel.convertedAmount {
-                AmountView(amount: amount)
-            } else {
-                ProgressView()
-            }
-            
-            if let profitAmount = viewModel.convertedProfit, profitAmount.value != 0.0 {
-                ProfitAmountView(profit: profitAmount)
+            switch displayMode {
+            case .amountAndProfit:
+                if let amount = viewModel.convertedAmount {
+                    AmountView(amount: amount)
+                } else {
+                    ProgressView()
+                }
+
+                if let profitAmount = viewModel.convertedProfit, profitAmount.value != 0.0 {
+                    ProfitAmountView(profit: profitAmount)
+                }
+            case .amountOnly:
+                if let amount = viewModel.convertedAmount {
+                    AmountView(amount: amount)
+                } else {
+                    ProgressView()
+                }
+            case .profitOnly:
+                if let profitAmount = viewModel.convertedProfit {
+                    ProfitAmountView(profit: profitAmount)
+                } else {
+                    ProgressView()
+                }
             }
         }
     }

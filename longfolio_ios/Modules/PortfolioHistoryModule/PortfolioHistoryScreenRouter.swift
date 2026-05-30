@@ -8,8 +8,6 @@
 import Foundation
 import SharedModels
 
-enum PortfolioHistoryScreenRoute: Hashable, Identifiable {
-    case portfolioHistory
-}
+enum PortfolioHistoryScreenRoute: Hashable, Identifiable { }
 
-final class PortfolioHistoryScreenRouter: DefaultRootRouter<PortfolioHistoryScreenRoute> { }
+final class PortfolioHistoryScreenRouter: DefaultRootRouter<EmptyRoute> { }

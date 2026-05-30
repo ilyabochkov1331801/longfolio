@@ -274,6 +274,10 @@ public final class TransactionsDataManager: ManagesTransactionsData {
                 currency: amount.currency
             )
         )
+        portfolio.realizedProfit = updateAmount(
+            portfolio.realizedProfit,
+            with: profit
+        )
         portfolio.sellAssetsTransactions.append(transaction)
         dataBase.insert(entity: transaction)
 
@@ -338,6 +342,10 @@ public final class TransactionsDataManager: ManagesTransactionsData {
 //    }
 
     private func updateCashAmount(_ currentAmounts: [Amount], with amount: Amount) -> [Amount] {
+        updateAmount(currentAmounts, with: amount)
+    }
+
+    private func updateAmount(_ currentAmounts: [Amount], with amount: Amount) -> [Amount] {
         var updatedAmounts = currentAmounts
 
         if let index = updatedAmounts.firstIndex(where: { $0.currency == amount.currency }) {

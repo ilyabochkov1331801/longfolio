@@ -18,6 +18,7 @@ final class SwiftDataModelsMapper {
         return Portfolio(
             name: entity.name,
             cashAmount: entity.cashAmount,
+            realizedProfit: entity.realizedProfit,
             assetsTransactions: assetTransactions,
             cashTransactions: entity.cashTransactions.map(makeCashTransaction),
             dividendsTransactions: entity.dividendTransactions.map(makeDividendTransaction),

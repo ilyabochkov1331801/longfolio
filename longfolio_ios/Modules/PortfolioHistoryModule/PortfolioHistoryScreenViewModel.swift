@@ -23,12 +23,21 @@ final class PortfolioHistoryScreenViewModel {
     private var portfolio: Portfolio
     var selectedSnapshot: PortfolioSnapshot?
     var errorMessage: String?
+    var isLoading = false
     
     var selectedDate = Date().addingTimeInterval(-24 * 60 * 60) {
         didSet {
             if isAfterMaximumSelectableDate(selectedDate) {
                 selectedDate = maximumSelectableDate
+                return
             }
+
+            guard !calendar.isDate(oldValue, inSameDayAs: selectedDate) else {
+                return
+            }
+
+            prepareForLoading()
+            scheduleLoadData(for: selectedDate)
         }
     }
     var currentPositions: [PositionSnapshot] = []
@@ -64,14 +73,13 @@ final class PortfolioHistoryScreenViewModel {
         }
         
         selectedDate = isAfterMaximumSelectableDate(date) ? maximumSelectableDate : date
-        scheduleLoadData()
     }
     
     private func isAfterMaximumSelectableDate(_ date: Date) -> Bool {
         calendar.startOfDay(for: date) > calendar.startOfDay(for: maximumSelectableDate)
     }
     
-    private func scheduleLoadData() {
+    private func scheduleLoadData(for date: Date) {
         loadDataTask?.cancel()
         loadDataTask = Task { [weak self] in
             do {
@@ -80,25 +88,48 @@ final class PortfolioHistoryScreenViewModel {
                 return
             }
             
-            await self?.loadData()
+            await self?.loadData(for: date)
         }
     }
     
-    func loadData() async {
+    private func prepareForLoading() {
         errorMessage = nil
+        selectedSnapshot = nil
+        currentPositions = []
+        isLoading = true
+    }
+
+    func loadData(for date: Date? = nil) async {
+        let date = date ?? selectedDate
+        errorMessage = nil
+        isLoading = true
         
-        if let data = portfolio.snaphots.first(where: { calendar.isDate($0.date, inSameDayAs: selectedDate) }) {
+        if let data = portfolio.snaphots.first(where: { calendar.isDate($0.date, inSameDayAs: date) }) {
             self.selectedSnapshot = data
+            self.currentPositions = data.positions
         }
         
         do {
             let snapshot = try await portfolioSnapshotDataManager.getOrFetchSnapshot(
-                for: selectedDate, portfolio: portfolio
+                for: date, portfolio: portfolio
             )
+            guard calendar.isDate(date, inSameDayAs: selectedDate) else {
+                return
+            }
+
             self.selectedSnapshot = snapshot
             self.currentPositions = snapshot.positions
+            self.errorMessage = nil
         } catch {
+            guard calendar.isDate(date, inSameDayAs: selectedDate) else {
+                return
+            }
+
+            self.selectedSnapshot = nil
+            self.currentPositions = []
             self.errorMessage = error.localizedDescription
         }
+
+        isLoading = false
     }
 }

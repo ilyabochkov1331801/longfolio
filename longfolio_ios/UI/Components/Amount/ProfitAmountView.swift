@@ -21,6 +21,12 @@ struct ProfitAmountView: View {
     }
     
     private var color: Color {
-        profit.value > 0 ? .green : .red
+        if profit.value > 0 {
+            return .green
+        } else if profit.value < 0 {
+            return .red
+        } else {
+            return .secondary
+        }
     }
 }
