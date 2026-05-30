@@ -32,6 +32,7 @@ final class PortfolioDetailsScreenViewModel {
     var positionsForDisplaying: [Position] = []
     var positionsAmount: [Asset: Amount] = [:]
     var positionsProfit: [Asset: Amount] = [:]
+    var positionsDisplayData: [Asset: PositionDisplayData] = [:]
     var canShowMorePositions = false
 
     init(dependencyContainer: DIContainer, portfolio: Portfolio) {
@@ -65,6 +66,29 @@ final class PortfolioDetailsScreenViewModel {
 struct PortfolioDetailsPeriodResult: Equatable, Hashable {
     let period: PortfolioDetailsResultPeriod
     let value: Double?
+}
+
+struct PositionDisplayData: Equatable {
+    let baseCurrency: Currency
+    let currentPrice: Amount
+    let currentAmount: Amount
+    let convertedCurrentAmount: Amount
+    let profit: Amount
+    let convertedProfit: Amount
+    let profitPercent: Double?
+    let lots: [PositionLotDisplayData]
+}
+
+struct PositionLotDisplayData: Equatable, Identifiable {
+    let id: UUID
+    let assetLot: AssetLot
+    let quantity: Double
+    let openPrice: Amount
+    let currentAmount: Amount
+    let convertedCurrentAmount: Amount
+    let profit: Amount
+    let convertedProfit: Amount
+    let profitPercent: Double?
 }
 
 enum PortfolioDetailsResultPeriod: CaseIterable, Equatable, Hashable {
@@ -119,26 +143,101 @@ extension PortfolioDetailsScreenViewModel {
             
         }
     }
-    
+
     func loadAmounts() async {
         do {
             totalAmount = try await portfolioStatisticsManager.totalAmount(in: portfolio)
             profitAmount = try await portfolioStatisticsManager.totalProfit(in: portfolio)
             positionsAmount.removeAll()
             positionsProfit.removeAll()
+            positionsDisplayData.removeAll()
+            let defaultCurrency = try settingsProvider.getDefaultCurrency()
             
             for position in portfolio.positions {
-                let price = try await realtimePricesProvider.realtimePrice(for: position)
-                positionsAmount[position.asset] = price
-                positionsProfit[position.asset] = Amount(
-                    value: price.value - position.openAmount.value,
-                    currency: price.currency
+                let currentPrice = try await realtimePricesProvider.realtimePrice(for: position.asset)
+                let currentAmount = Amount(
+                    value: currentPrice.value * position.quantity,
+                    currency: currentPrice.currency
+                )
+                let profit = Amount(
+                    value: currentAmount.value - position.openAmount.value,
+                    currency: currentAmount.currency
+                )
+                positionsAmount[position.asset] = currentAmount
+                positionsProfit[position.asset] = profit
+                positionsDisplayData[position.asset] = try await displayData(
+                    for: position,
+                    currentPrice: currentPrice,
+                    currentAmount: currentAmount,
+                    profit: profit,
+                    defaultCurrency: defaultCurrency
                 )
             }
             await loadPeriodResults()
         } catch {
 
         }
+    }
+
+    private func displayData(
+        for position: Position,
+        currentPrice: Amount,
+        currentAmount: Amount,
+        profit: Amount,
+        defaultCurrency: Currency
+    ) async throws -> PositionDisplayData {
+        let convertedCurrentAmount = try await convert(currentAmount, to: defaultCurrency)
+        let convertedProfit = try await convert(profit, to: defaultCurrency)
+        var lots: [PositionLotDisplayData] = []
+        for lot in position.lots.sorted(by: { $0.date < $1.date }) {
+            let lotCurrentAmount = Amount(
+                value: currentPrice.value * lot.quantity,
+                currency: currentPrice.currency
+            )
+            let lotProfit = Amount(
+                value: lotCurrentAmount.value - lot.openAmount.value,
+                currency: lotCurrentAmount.currency
+            )
+
+            lots.append(PositionLotDisplayData(
+                id: lot.id,
+                assetLot: lot,
+                quantity: lot.quantity,
+                openPrice: Amount(value: lot.unitOpenAmount, currency: lot.openAmount.currency),
+                currentAmount: lotCurrentAmount,
+                convertedCurrentAmount: try await convert(lotCurrentAmount, to: defaultCurrency),
+                profit: lotProfit,
+                convertedProfit: try await convert(lotProfit, to: defaultCurrency),
+                profitPercent: profitPercent(profit: lotProfit, openAmount: lot.openAmount)
+            ))
+        }
+
+        return PositionDisplayData(
+            baseCurrency: defaultCurrency,
+            currentPrice: currentPrice,
+            currentAmount: currentAmount,
+            convertedCurrentAmount: convertedCurrentAmount,
+            profit: profit,
+            convertedProfit: convertedProfit,
+            profitPercent: profitPercent(profit: profit, openAmount: position.openAmount),
+            lots: lots
+        )
+    }
+
+    private func convert(_ amount: Amount, to currency: Currency) async throws -> Amount {
+        guard amount.currency != currency else {
+            return amount
+        }
+
+        return try await converter.convert(to: currency, amount: amount, date: .now)
+    }
+
+    private func profitPercent(profit: Amount, openAmount: Amount) -> Double? {
+        guard openAmount.value != 0 else {
+            return nil
+        }
+
+        return profit.value / abs(openAmount.value)
     }
 
     func loadPeriodResults() async {

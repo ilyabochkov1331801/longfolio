@@ -42,11 +42,21 @@ public protocol ManagesTransactionsData {
         commision: Amount,
         date: Date
     ) throws
+
+    func createSellAssetLotTransaction(
+        for portfolioName: String,
+        lot: AssetLot,
+        quantity: Double,
+        amount: Amount,
+        commision: Amount,
+        date: Date
+    ) throws
 }
 
 public enum TransactionsErrors: Error {
     case nothingToSell
     case notEnoughQuantity
+    case lotNotFound
 }
 
 public final class TransactionsDataManager: ManagesTransactionsData {
@@ -288,58 +298,96 @@ public final class TransactionsDataManager: ManagesTransactionsData {
         try dataBase.save()
     }
 
-//    public func createAssetTransaction(
-//        for portfolioName: String,
-//        asset: Asset,
-//        type: AssetTransactionType,
-//        quantity: Double,
-//        amount: Amount,
-//        commision: Amount,
-//        date: Date
-//    ) throws {
-//        let portfolioDescriptor = FetchDescriptor<PortfolioEntity>(
-//            predicate: #Predicate { $0.name == portfolioName }
-//        )
-//
-//        guard let portfolio = try dataBase.fetch(descriptor: portfolioDescriptor).first else {
-//            return
-//        }
-//
-//        let assetEntity = try fetchOrCreateAsset(from: asset)
-//        
-//        let transaction = AssetTransactionEntity(
-//            id: UUID().uuidString,
-//            date: date,
-//            type: type,
-//            asset: assetEntity,
-//            quantity: quantity,
-//            amount: amount,
-//            commision: commision,
-//            portfolio: portfolio
-//        )
-//
-//        let cashAmountDelta = Amount(
-//            value: type == .buy ? -amount.value : amount.value,
-//            currency: amount.currency
-//        )
-//
-//        portfolio.cashAmount = updateCashAmount(
-//            portfolio.cashAmount,
-//            with: cashAmountDelta
-//        )
-//        portfolio.assetsTransactions.append(transaction)
-//        dataBase.insert(entity: transaction)
-//
-//        try updatePosition(
-//            in: portfolio,
-//            asset: assetEntity,
-//            type: type,
-//            quantity: quantity,
-//            amount: amount
-//        )
-//
-//        try dataBase.save()
-//    }
+    public func createSellAssetLotTransaction(
+        for portfolioName: String,
+        lot: AssetLot,
+        quantity: Double,
+        amount: Amount,
+        commision: Amount,
+        date: Date
+    ) throws {
+        let portfolioDescriptor = FetchDescriptor<PortfolioEntity>(
+            predicate: #Predicate { $0.name == portfolioName }
+        )
+
+        guard
+            let portfolio = try dataBase.fetch(descriptor: portfolioDescriptor).first,
+            let position = portfolio.positions.first(where: { $0.asset.ticker == lot.asset.ticker.ticker && $0.asset.exchange.code == lot.asset.ticker.exchange.code })
+        else {
+            throw TransactionsErrors.nothingToSell
+        }
+
+        guard let lotEntity = position.lots.first(where: { $0.id == lot.id }) else {
+            throw TransactionsErrors.lotNotFound
+        }
+
+        guard lotEntity.quantity >= quantity else {
+            throw TransactionsErrors.notEnoughQuantity
+        }
+
+        let assetEntity = position.asset
+        let closedLot: AssetLotEntity
+
+        if lotEntity.quantity > quantity {
+            let separatedLot = AssetLotEntity(
+                id: UUID(),
+                asset: assetEntity,
+                quantity: quantity,
+                openAmount: Amount(
+                    value: lotEntity.unitOpenAmount * quantity,
+                    currency: lotEntity.openAmount.currency
+                ),
+                date: lotEntity.date
+            )
+            lotEntity.quantity -= quantity
+            lotEntity.openAmount = Amount(
+                value: lotEntity.openAmount.value - separatedLot.openAmount.value,
+                currency: lotEntity.openAmount.currency
+            )
+            dataBase.insert(entity: separatedLot)
+            closedLot = separatedLot
+        } else {
+            closedLot = lotEntity
+            position.lots.removeAll(where: { $0.id == lot.id })
+        }
+
+        let profit = Amount(
+            value: amount.value - commision.value - closedLot.openAmount.value,
+            currency: amount.currency
+        )
+        let transaction = SellAssetTransactionEntity(
+            id: UUID().uuidString,
+            asset: assetEntity,
+            date: date,
+            quantity: quantity,
+            amount: amount,
+            commision: commision,
+            portfolio: portfolio,
+            closedLots: [closedLot],
+            profit: profit
+        )
+
+        portfolio.cashAmount = updateCashAmount(
+            portfolio.cashAmount,
+            with: Amount(
+                value: amount.value - commision.value,
+                currency: amount.currency
+            )
+        )
+        portfolio.realizedProfit = updateAmount(
+            portfolio.realizedProfit,
+            with: profit
+        )
+        portfolio.sellAssetsTransactions.append(transaction)
+        dataBase.insert(entity: transaction)
+
+        if position.lots.isEmpty {
+            portfolio.positions.removeAll(where: { $0.asset.ticker == lot.asset.ticker.ticker && $0.asset.exchange.code == lot.asset.ticker.exchange.code })
+            dataBase.delete(entity: position)
+        }
+
+        try dataBase.save()
+    }
 
     private func updateCashAmount(_ currentAmounts: [Amount], with amount: Amount) -> [Amount] {
         updateAmount(currentAmounts, with: amount)

@@ -1,19 +1,19 @@
 //
-//  CreateAssetTransactionDetailsScreenView.swift
+//  SellAssetTransactionScreenView.swift
 //  longfolio
 //
-//  Created by Assistant on 08.04.26.
+//  Created by Assistant on 30.05.26.
 //
 
 import SwiftUI
 import SharedModels
 
-struct CreateAssetTransactionDetailsScreenView: View {
-    @State var viewModel: CreateAssetTransactionDetailsScreenViewModel
-    @StateObject var router: CreateAssetTransactionDetailsScreenRouter
+struct SellAssetTransactionScreenView: View {
+    @State var viewModel: SellAssetTransactionScreenViewModel
+    @StateObject var router: SellAssetTransactionScreenRouter
 
     var body: some View {
-        BaseScreenView(router: router) {
+        RootScreenView(router: router) {
             Form {
                 Section("Asset") {
                     HStack {
@@ -24,9 +24,9 @@ struct CreateAssetTransactionDetailsScreenView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        
+
                         Spacer()
-                        
+
                         if let currentPrice = viewModel.currentPrice {
                             AmountView(amount: currentPrice)
                         } else {
@@ -48,7 +48,7 @@ struct CreateAssetTransactionDetailsScreenView: View {
                         configuration: .init(
                             title: "Amount",
                             placeholder: "Enter amount",
-                            hint: "Total transaction amount",
+                            hint: "Total sale amount",
                             keyboardType: .decimalPad,
                             formatter: AmountTextInputFormatter()
                         )
@@ -59,7 +59,7 @@ struct CreateAssetTransactionDetailsScreenView: View {
                         configuration: .init(
                             title: "Quantity",
                             placeholder: "Enter quantity",
-                            hint: "Number of shares or units",
+                            hint: "Maximum \(viewModel.maximumQuantity.formatted())",
                             keyboardType: .decimalPad,
                             formatter: AmountTextInputFormatter()
                         )
@@ -77,10 +77,10 @@ struct CreateAssetTransactionDetailsScreenView: View {
                     )
                 }
             }
-            .navigationTitle("New Buy")
+            .navigationTitle("Sell Asset")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button("Sell") {
                         if viewModel.createTransaction() {
                             router.dismiss()
                         }

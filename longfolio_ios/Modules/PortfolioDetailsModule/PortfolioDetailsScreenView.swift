@@ -13,6 +13,7 @@ struct PortfolioDetailsScreenView: View {
 
     @State var viewModel: PortfolioDetailsScreenViewModel
     @StateObject var router: PortfolioDetailsScreenRouter
+    @State private var expandedPositionAssets: Set<Asset> = []
 
     var body: some View {
         BaseScreenView(router: router) {
@@ -32,6 +33,15 @@ struct PortfolioDetailsScreenView: View {
             case let .createAssetTransaction(portfolio):
                 SearchAssetsForTransactionScreenView(
                     viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
+                    router: .init(parent: router)
+                )
+            case let .sellAssetTransaction(portfolio, lot):
+                SellAssetTransactionScreenView(
+                    viewModel: .init(
+                        dependencyContainer: dependencyContainer,
+                        portfolioName: portfolio.name,
+                        lot: lot
+                    ),
                     router: .init(parent: router)
                 )
             case let .createDividendTransaction(portfolio):
@@ -85,11 +95,22 @@ struct PortfolioDetailsScreenView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(viewModel.positionsForDisplaying, id: \.asset) { position in
-                        PositionPreviewView(
-                            position: position,
-                            amount: viewModel.positionsAmount[position.asset],
-                            profit: viewModel.positionsProfit[position.asset]
-                        )
+                        positionRow(for: position)
+
+                        if isExpanded(position), let displayData = viewModel.positionsDisplayData[position.asset] {
+                            ForEach(displayData.lots) { lot in
+                                PositionPreviewView(position: position, lot: lot)
+                                    .transition(.opacity.combined(with: .move(edge: .top)))
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button {
+                                            openSellScreen(for: lot)
+                                        } label: {
+                                            Label("Sell", systemImage: "minus.circle")
+                                        }
+                                        .tint(.red)
+                                    }
+                            }
+                        }
                     }
                 }
                 
@@ -117,6 +138,7 @@ struct PortfolioDetailsScreenView: View {
         }
         .listStyle(.insetGrouped)
         .navigationTitle(viewModel.portfolio.name)
+        .animation(.snappy, value: expandedPositionAssets)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
@@ -143,6 +165,61 @@ struct PortfolioDetailsScreenView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private func positionRow(for position: Position) -> some View {
+        let displayData = viewModel.positionsDisplayData[position.asset]
+        let canExpand = (displayData?.lots.count ?? 0) > 1
+
+        PositionPreviewView(
+            position: position,
+            amount: viewModel.positionsAmount[position.asset],
+            profit: viewModel.positionsProfit[position.asset],
+            displayData: displayData
+        )
+        .opacity(hasExpandedPosition && !isExpanded(position) ? 0.38 : 1)
+        .onTapGesture {
+            guard canExpand else { return }
+            toggle(position)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            if let lot = displayData?.lots.first, displayData?.lots.count == 1 {
+                Button {
+                    openSellScreen(for: lot)
+                } label: {
+                    Label("Sell", systemImage: "minus.circle")
+                }
+                .tint(.red)
+            }
+        }
+    }
+
+    private func isExpanded(_ position: Position) -> Bool {
+        let canExpand = (viewModel.positionsDisplayData[position.asset]?.lots.count ?? 0) > 1
+        return canExpand && expandedPositionAssets.contains(position.asset)
+    }
+
+    private var hasExpandedPosition: Bool {
+        viewModel.positionsForDisplaying.contains(where: isExpanded)
+    }
+
+    private func toggle(_ position: Position) {
+        if isExpanded(position) {
+            expandedPositionAssets.remove(position.asset)
+        } else {
+            expandedPositionAssets = [position.asset]
+        }
+    }
+
+    private func openSellScreen(for lot: PositionLotDisplayData) {
+        router.navigateModaly(
+            to: .sellAssetTransaction(
+                viewModel.portfolio,
+                lot.assetLot
+            )
+        )
+    }
+
 }
 
 private struct PortfolioDetailsHeaderView: View {

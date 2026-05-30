@@ -11,14 +11,6 @@ import SharedWorkers
 
 @Observable
 final class CreateAssetTransactionDetailsScreenViewModel {
-    enum TransactionKind: String, CaseIterable, Identifiable {
-        case buy
-        case sell
-
-        var id: Self { self }
-        var title: String { rawValue.capitalized }
-    }
-
     private let assetsDataManager: ManagesAssetsData
     private let transactionsDataManager: ManagesTransactionsData
     private let realtimePricesProvider: ProvidesRealtimePrices
@@ -26,7 +18,6 @@ final class CreateAssetTransactionDetailsScreenViewModel {
 
     let asset: Asset
     var currentPrice: Amount?
-    var transactionKind: TransactionKind = .buy
     var date: Date = .now
     var amount: Double = 0
     var commission: Double = 0
@@ -65,40 +56,18 @@ extension CreateAssetTransactionDetailsScreenViewModel {
 
         do {
             let asset = try assetsDataManager.saveAsset(asset)
-            switch transactionKind {
-            case .buy:
-                try transactionsDataManager.createBuyAssetTransaction(
-                    for: portfolioName,
-                    asset: asset,
-                    quantity: quantity,
-                    amount: Amount(value: amount, currency: asset.currency),
-                    commision: Amount(value: commission, currency: asset.currency),
-                    date: date
-                )
-                return true
-            case .sell:
-                try transactionsDataManager.createSellAssetTransaction(
-                    for: portfolioName,
-                    asset: asset,
-                    quantity: quantity,
-                    amount: Amount(value: amount, currency: asset.currency),
-                    commision: Amount(value: commission, currency: asset.currency),
-                    date: date
-                )
-                return true
-            }
+            try transactionsDataManager.createBuyAssetTransaction(
+                for: portfolioName,
+                asset: asset,
+                quantity: quantity,
+                amount: Amount(value: amount, currency: asset.currency),
+                commision: Amount(value: commission, currency: asset.currency),
+                date: date
+            )
+            return true
             
         } catch {
-            if let error = error as? TransactionsErrors {
-                switch error {
-                case .nothingToSell:
-                    self.error = "There is no open position for this asset."
-                case .notEnoughQuantity:
-                    self.error = "Not enough open lots to sell this quantity."
-                }
-            } else {
-                self.error = error.localizedDescription
-            }
+            self.error = error.localizedDescription
             return false
         }
     }
