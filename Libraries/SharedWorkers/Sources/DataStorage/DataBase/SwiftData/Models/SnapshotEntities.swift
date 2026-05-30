@@ -40,6 +40,7 @@ final class PortfolioSnapshotEntity {
     var date: Date
     var name: String
     var cache: [Amount]
+    var realizedProfit: [Amount] = []
     var portfolio: PortfolioEntity
     
     init(
@@ -47,12 +48,14 @@ final class PortfolioSnapshotEntity {
         date: Date,
         name: String,
         cache: [Amount],
+        realizedProfit: [Amount] = [],
         portfolio: PortfolioEntity
     ) {
         self.positions = positions
         self.date = date
         self.name = name
         self.cache = cache
+        self.realizedProfit = realizedProfit
         self.portfolio = portfolio
     }
 }

@@ -57,6 +57,7 @@ struct PortfolioDetailsScreenView: View {
             PortfolioDetailsHeaderView(
                 portfolioAmount: viewModel.totalAmount,
                 profitAmount: viewModel.profitAmount,
+                periodResults: viewModel.periodResults,
                 dependencyContainer: dependencyContainer
             )
 
@@ -147,6 +148,7 @@ struct PortfolioDetailsScreenView: View {
 private struct PortfolioDetailsHeaderView: View {
     let portfolioAmount: [Amount]?
     let profitAmount: [Amount]?
+    let periodResults: [PortfolioDetailsPeriodResult]
     let dependencyContainer: DIContainer
 
     var body: some View {
@@ -154,7 +156,8 @@ private struct PortfolioDetailsHeaderView: View {
             PortfolioDetailsStatisticsView(
                 dependencyContainer: dependencyContainer,
                 amount: portfolioAmount,
-                profitAmount: profitAmount
+                profitAmount: profitAmount,
+                periodResults: periodResults
             )
         } else {
             PortfolioDetailsHeaderSkeletonView()
@@ -168,12 +171,19 @@ private struct PortfolioDetailsStatisticsView: View {
     private let dependencyContainer: DIContainer
     private let amount: [Amount]
     private let profitAmount: [Amount]
+    private let periodResults: [PortfolioDetailsPeriodResult]
     private let convertedDate: Date
 
-    init(dependencyContainer: DIContainer, amount: [Amount], profitAmount: [Amount]) {
+    init(
+        dependencyContainer: DIContainer,
+        amount: [Amount],
+        profitAmount: [Amount],
+        periodResults: [PortfolioDetailsPeriodResult]
+    ) {
         self.dependencyContainer = dependencyContainer
         self.amount = amount
         self.profitAmount = profitAmount
+        self.periodResults = periodResults
         self.convertedDate = Date()
         _viewModel = State(initialValue: .init(
             diContatiner: dependencyContainer,
@@ -222,6 +232,8 @@ private struct PortfolioDetailsStatisticsView: View {
                 .minimumScaleFactor(0.8)
                 .frame(minWidth: 116, alignment: .trailing)
             }
+
+            PortfolioDetailsPeriodResultsView(results: periodResults)
         }
         .padding(.vertical, 8)
         .task {
@@ -322,6 +334,74 @@ private struct PortfolioDetailsStatisticsView: View {
     }
 }
 
+private struct PortfolioDetailsPeriodResultsView: View {
+    let results: [PortfolioDetailsPeriodResult]
+
+    var body: some View {
+        Grid(horizontalSpacing: 12, verticalSpacing: 6) {
+            GridRow {
+                ForEach(PortfolioDetailsResultPeriod.allCases, id: \.self) { period in
+                    Text(period.title)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            GridRow {
+                ForEach(PortfolioDetailsResultPeriod.allCases, id: \.self) { period in
+                    resultValue(for: period)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .padding(.top, 6)
+        .accessibilityElement(children: .contain)
+    }
+
+    @ViewBuilder
+    private func resultValue(for period: PortfolioDetailsResultPeriod) -> some View {
+        if let result = results.first(where: { $0.period == period }) {
+            if let value = result.value {
+                Text(formattedPercent(value))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(color(for: value))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            } else {
+                Text("—")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            ShimmerPlaceholderView(size: CGSize(width: 54, height: valueHeight))
+        }
+    }
+
+    private func formattedPercent(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .percent
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.positivePrefix = "+"
+        return formatter.string(from: NSNumber(value: value)) ?? "0%"
+    }
+
+    private func color(for value: Double) -> Color {
+        if value > 0 {
+            return .green
+        } else if value < 0 {
+            return .red
+        } else {
+            return .secondary
+        }
+    }
+
+    private var valueHeight: CGFloat {
+        UIFont.preferredFont(forTextStyle: .subheadline).lineHeight
+    }
+}
+
 private struct PortfolioDetailsHeaderSkeletonView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -352,6 +432,25 @@ private struct PortfolioDetailsHeaderSkeletonView: View {
                 }
                 .frame(minWidth: 116, alignment: .trailing)
             }
+
+            Grid(horizontalSpacing: 12, verticalSpacing: 6) {
+                GridRow {
+                    ForEach(PortfolioDetailsResultPeriod.allCases, id: \.self) { period in
+                        Text(period.title)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+
+                GridRow {
+                    ForEach(PortfolioDetailsResultPeriod.allCases, id: \.self) { _ in
+                        ShimmerPlaceholderView(size: CGSize(width: 54, height: valueHeight))
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(.top, 6)
         }
         .padding(.vertical, 8)
     }
@@ -364,4 +463,7 @@ private struct PortfolioDetailsHeaderSkeletonView: View {
         UIFont.preferredFont(forTextStyle: .title3).lineHeight
     }
 
+    private var valueHeight: CGFloat {
+        UIFont.preferredFont(forTextStyle: .subheadline).lineHeight
+    }
 }

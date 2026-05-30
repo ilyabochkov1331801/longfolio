@@ -99,7 +99,8 @@ final class SwiftDataModelsMapper {
             positions: entity.positions.map(makePositionSnapshot),
             date: entity.date,
             name: entity.name,
-            cache: entity.cache
+            cache: entity.cache,
+            realizedProfit: entity.realizedProfit
         )
     }
 

@@ -83,12 +83,14 @@ public final class SnapshotDataManager: ManagesSnapshotData {
         }
 
         let cashAmount = AmountCalculator.sum(of: amounts)
+        let realizedProfit = realizedProfit(in: portfolio, until: date)
 
         let portfolioSnaphotEntity = PortfolioSnapshotEntity(
             positions: [],
             date: date,
             name: portfolio.name,
             cache: cashAmount,
+            realizedProfit: realizedProfit,
             portfolio: porfolioEntity
         )
 
@@ -180,6 +182,14 @@ public final class SnapshotDataManager: ManagesSnapshotData {
         return data.map {
             AssetDayPrice(date: $0.date, price: Amount(value: $0.close, currency: asset.currency))
         }
+    }
+
+    private func realizedProfit(in portfolio: Portfolio, until date: Date) -> [Amount] {
+        AmountCalculator.sum(
+            of: portfolio.assetsTransactions
+                .filter { $0.date <= date }
+                .compactMap(\.type.realizedProfit)
+        )
     }
 }
 

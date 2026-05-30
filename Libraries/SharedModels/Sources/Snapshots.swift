@@ -26,11 +26,19 @@ public struct PortfolioSnapshot: Equatable, Hashable, Sendable {
     public let date: Date
     public let name: String
     public let cache: [Amount]
+    public let realizedProfit: [Amount]
 
-    public init(positions: [PositionSnapshot], date: Date, name: String, cache: [Amount]) {
+    public init(
+        positions: [PositionSnapshot],
+        date: Date,
+        name: String,
+        cache: [Amount],
+        realizedProfit: [Amount] = []
+    ) {
         self.positions = positions
         self.date = date
         self.name = name
         self.cache = cache
+        self.realizedProfit = realizedProfit
     }
 }
