@@ -25,6 +25,13 @@ final class PortfoliosScreenViewModel {
     var profits: [String: [Amount]] = [:]
     var totalAmount: [Amount]?
     var totalProfit: [Amount]?
+    var allPortfolios: Portfolio? {
+        guard !portfolios.isEmpty else {
+            return nil
+        }
+
+        return Portfolio.combined(name: "All portfolios", portfolios: portfolios)
+    }
     
     init(dependencyContainer: DIContainer) {
         self.contextManager = dependencyContainer.contextManager

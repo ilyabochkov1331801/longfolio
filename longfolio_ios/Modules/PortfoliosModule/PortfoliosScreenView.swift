@@ -34,11 +34,12 @@ struct PortfoliosScreenView: View {
                     viewModel: .init(dependencyContainer: dependencyContainer),
                     router: .init(parent: router)
                 )
-            case let .portfolioDetails(portfolio):
+            case let .portfolioDetails(portfolio, mode):
                 PortfolioDetailsScreenView(
                     viewModel: .init(
                         dependencyContainer: dependencyContainer,
-                        portfolio: portfolio
+                        portfolio: portfolio,
+                        mode: mode
                     ),
                     router: .init(root: router, parent: router)
                 )
@@ -54,7 +55,7 @@ struct PortfoliosScreenView: View {
         List {
             ForEach(viewModel.portfolios, id: \.name) { portfolio in
                 Button {
-                    router.navigate(to: .portfolioDetails(portfolio))
+                    router.navigate(to: .portfolioDetails(portfolio, .single))
                 } label: {
                     PortfolioSummaryCell(
                         portfolio: portfolio,
@@ -72,12 +73,26 @@ struct PortfoliosScreenView: View {
             }
                         
             Section("All portfolios") {
-                PortfolioSummaryCell(
-                    title: "Total",
-                    portfolioAmount: viewModel.totalAmount,
-                    profitAmount: viewModel.totalProfit,
-                    dependencyContainer: dependencyContainer
-                )
+                if let allPortfolios = viewModel.allPortfolios {
+                    Button {
+                        router.navigate(to: .portfolioDetails(allPortfolios, .allPortfolios))
+                    } label: {
+                        PortfolioSummaryCell(
+                            title: "Total",
+                            portfolioAmount: viewModel.totalAmount,
+                            profitAmount: viewModel.totalProfit,
+                            dependencyContainer: dependencyContainer
+                        )
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    PortfolioSummaryCell(
+                        title: "Total",
+                        portfolioAmount: viewModel.totalAmount,
+                        profitAmount: viewModel.totalProfit,
+                        dependencyContainer: dependencyContainer
+                    )
+                }
             }
             
         }

@@ -22,7 +22,9 @@ final class PortfolioDetailsScreenViewModel {
     private let settingsProvider: ProvidesSettings
     private let calendar = Calendar.current
     private let maximumSnapshotLookupDays = 30
+    private let mode: PortfolioDetailsMode
     private var cancelBag: Set<AnyCancellable> = []
+    private var sourcePortfolios: [Portfolio] = []
     
     var totalAmount: [Amount]?
     var profitAmount: [Amount]?
@@ -34,9 +36,17 @@ final class PortfolioDetailsScreenViewModel {
     var positionsProfit: [Asset: Amount] = [:]
     var positionsDisplayData: [Asset: PositionDisplayData] = [:]
     var canShowMorePositions = false
+    var isReadOnly: Bool {
+        mode == .allPortfolios
+    }
 
-    init(dependencyContainer: DIContainer, portfolio: Portfolio) {
+    init(
+        dependencyContainer: DIContainer,
+        portfolio: Portfolio,
+        mode: PortfolioDetailsMode = .single
+    ) {
         self.contextManager = dependencyContainer.contextManager
+        self.mode = mode
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
@@ -57,10 +67,16 @@ final class PortfolioDetailsScreenViewModel {
         self.settingsProvider = dependencyContainer.settingsProvider
         
         self.portfolio = portfolio
+        self.sourcePortfolios = mode == .allPortfolios ? [] : [portfolio]
         positionsForDisplaying = Array(portfolio.positions.prefix(5))
         canShowMorePositions = portfolio.positions.count > 2
         setupBindings()
     }
+}
+
+enum PortfolioDetailsMode: Hashable {
+    case single
+    case allPortfolios
 }
 
 struct PortfolioDetailsPeriodResult: Equatable, Hashable {
@@ -131,11 +147,18 @@ extension PortfolioDetailsScreenViewModel {
 
     func loadPortfolio() async {
         do {
-            guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolio.name) else {
-                return
+            switch mode {
+            case .single:
+                guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolio.name) else {
+                    return
+                }
+                sourcePortfolios = [portfolio]
+                self.portfolio = portfolio
+            case .allPortfolios:
+                let portfolios = try portfolioDataManager.fetchPortfolios()
+                sourcePortfolios = portfolios
+                portfolio = Portfolio.combined(name: "All portfolios", portfolios: portfolios)
             }
-
-            self.portfolio = portfolio
             positionsForDisplaying = Array(portfolio.positions.prefix(2))
             canShowMorePositions = portfolio.positions.count > 2
             await loadAmounts()
@@ -301,13 +324,38 @@ extension PortfolioDetailsScreenViewModel {
                 continue
             }
 
-            do {
-                return try await portfolioSnapshotDataManager.getOrFetchSnapshot(
-                    for: candidateDate,
-                    portfolio: portfolio
-                )
-            } catch {
-                continue
+            switch mode {
+            case .single:
+                do {
+                    return try await portfolioSnapshotDataManager.getOrFetchSnapshot(
+                        for: candidateDate,
+                        portfolio: portfolio
+                    )
+                } catch {
+                    continue
+                }
+            case .allPortfolios:
+                var snapshots: [PortfolioSnapshot] = []
+                for sourcePortfolio in sourcePortfolios {
+                    do {
+                        snapshots.append(
+                            try await portfolioSnapshotDataManager.getOrFetchSnapshot(
+                                for: candidateDate,
+                                portfolio: sourcePortfolio
+                            )
+                        )
+                    } catch {
+                        continue
+                    }
+                }
+
+                if !snapshots.isEmpty {
+                    return PortfolioSnapshot.combined(
+                        name: portfolio.name,
+                        date: candidateDate,
+                        snapshots: snapshots
+                    )
+                }
             }
         }
 

@@ -22,7 +22,11 @@ struct PortfolioDetailsScreenView: View {
             switch route {
             case let .transactions(portfolio):
                 TransactionsScreenView(
-                    viewModel: .init(dependencyContainer: dependencyContainer, portfolio: portfolio),
+                    viewModel: .init(
+                        dependencyContainer: dependencyContainer,
+                        portfolio: portfolio,
+                        reloadsFromStorage: !viewModel.isReadOnly
+                    ),
                     router: .init(root: router.root, parent: router)
                 )
             case let .createCashTransaction(portfolio):
@@ -102,12 +106,14 @@ struct PortfolioDetailsScreenView: View {
                                 PositionPreviewView(position: position, lot: lot)
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button {
-                                            openSellScreen(for: lot)
-                                        } label: {
-                                            Label("Sell", systemImage: "minus.circle")
+                                        if !viewModel.isReadOnly {
+                                            Button {
+                                                openSellScreen(for: lot)
+                                            } label: {
+                                                Label("Sell", systemImage: "minus.circle")
+                                            }
+                                            .tint(.red)
                                         }
-                                        .tint(.red)
                                     }
                             }
                         }
@@ -140,27 +146,29 @@ struct PortfolioDetailsScreenView: View {
         .navigationTitle(viewModel.portfolio.name)
         .animation(.snappy, value: expandedPositionAssets)
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {
-                    router.navigateModaly(to: .openHistory(viewModel.portfolio))
-                } label: {
-                    Image(systemName: "clock.arrow.circlepath")
-                }
-
-                Menu {
-                    Button("Cash") {
-                        router.navigateModaly(to: .createCashTransaction(viewModel.portfolio))
+            if !viewModel.isReadOnly {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        router.navigateModaly(to: .openHistory(viewModel.portfolio))
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
                     }
 
-                    Button("Asset") {
-                        router.navigateModaly(to: .createAssetTransaction(viewModel.portfolio))
-                    }
+                    Menu {
+                        Button("Cash") {
+                            router.navigateModaly(to: .createCashTransaction(viewModel.portfolio))
+                        }
 
-                    Button("Dividends") {
-                        router.navigateModaly(to: .createDividendTransaction(viewModel.portfolio))
+                        Button("Asset") {
+                            router.navigateModaly(to: .createAssetTransaction(viewModel.portfolio))
+                        }
+
+                        Button("Dividends") {
+                            router.navigateModaly(to: .createDividendTransaction(viewModel.portfolio))
+                        }
+                    } label: {
+                        Image(systemName: "plus")
                     }
-                } label: {
-                    Image(systemName: "plus")
                 }
             }
         }
@@ -183,7 +191,7 @@ struct PortfolioDetailsScreenView: View {
             toggle(position)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            if let lot = displayData?.lots.first, displayData?.lots.count == 1 {
+            if !viewModel.isReadOnly, let lot = displayData?.lots.first, displayData?.lots.count == 1 {
                 Button {
                     openSellScreen(for: lot)
                 } label: {

@@ -13,6 +13,7 @@ import SharedWorkers
 @Observable
 final class TransactionsScreenViewModel {
     private let portfolioName: String
+    private let reloadsFromStorage: Bool
     private let portfolioDataManager: ManagesPortfolioData
     private let contextManager: ManagesSwiftDataContext
     private var cancelBag: Set<AnyCancellable> = []
@@ -20,8 +21,13 @@ final class TransactionsScreenViewModel {
     var portfolio: Portfolio
     var error: String?
 
-    init(dependencyContainer: DIContainer, portfolio: Portfolio) {
+    init(
+        dependencyContainer: DIContainer,
+        portfolio: Portfolio,
+        reloadsFromStorage: Bool = true
+    ) {
         self.portfolioName = portfolio.name
+        self.reloadsFromStorage = reloadsFromStorage
         self.contextManager = dependencyContainer.contextManager
         let dataBase = SwiftDataBase(contextManager: dependencyContainer.contextManager)
         self.portfolioDataManager = PortfolioDataManager(dataBase: dataBase)
@@ -41,6 +47,10 @@ extension TransactionsScreenViewModel {
     }
 
     func loadTransactions() {
+        guard reloadsFromStorage else {
+            return
+        }
+
         do {
             guard let portfolio = try portfolioDataManager.fetchPortfolio(with: portfolioName) else {
                 return
