@@ -18,6 +18,7 @@ public protocol ManagesSnapshotData {
 public enum SnapshotDataManagerError: LocalizedError {
     case dataNotFound
     case weekendDate(Date)
+    case historicalDataDateTooOld(Date)
     
     public var errorDescription: String? {
         switch self {
@@ -25,6 +26,8 @@ public enum SnapshotDataManagerError: LocalizedError {
             "Data not found"
         case .weekendDate:
             "Portfolio history is unavailable for weekends"
+        case .historicalDataDateTooOld:
+            "Historical data is available for the last year only"
         }
     }
 }
@@ -33,6 +36,7 @@ public final class SnapshotDataManager: ManagesSnapshotData {
     private let eodhdNetworkService: EodhdNetworkServiceProtocol
     private let dataBase: SwiftDataBaseProtocol
     private let mapper: SwiftDataModelsMapper
+    private let calendar = Calendar.current
 
     public init(dataBase: SwiftDataBaseProtocol, networkService: EodhdNetworkServiceProtocol) {
         self.dataBase = dataBase
@@ -49,6 +53,10 @@ public final class SnapshotDataManager: ManagesSnapshotData {
 
         if let existingSnapshot = porfolioEntity.snapshots.first(where: { $0.date.isSameDay(with: date) }) {
             return mapper.makePortfolioSnapshot(from: existingSnapshot)
+        }
+
+        guard isWithinHistoricalDataRange(date) else {
+            throw SnapshotDataManagerError.historicalDataDateTooOld(date)
         }
         
         let cashTransactions = portfolio.cashTransactions.filter { $0.date <= date }
@@ -134,26 +142,45 @@ public final class SnapshotDataManager: ManagesSnapshotData {
         
         if let dayPrice = assetEntity.priceHistory.first(where: { $0.date.isSameDay(with: date) }) {
             return dayPrice.price
-        } else {
-            let prices = try await fetchAssetPrices(
-                for: asset,
-                fromDate: date.addingTimeInterval(-10 * 24 * 60 * 60), // 10 дней назад
-                toDate: date
-            )
-            let entities = prices.map {
-                let entity = AssetDayPriceEntity(date: $0.date, price: $0.price, asset: assetEntity)
-                dataBase.insert(entity: entity)
-                return entity
+        }
+
+        let fromDate = max(
+            date.addingTimeInterval(-5 * 24 * 60 * 60),
+            oldestHistoricalDataDate()
+        )
+        
+        let toDate = min(
+            date.addingTimeInterval(5 * 24 * 60 * 60),
+            Date()
+        )
+
+        let prices = try await fetchAssetPrices(
+            for: asset,
+            fromDate: fromDate,
+            toDate: toDate
+        )
+        let existingPriceDates = Set(assetEntity.priceHistory.map { calendar.startOfDay(for: $0.date) })
+        let entities = prices.compactMap { price -> AssetDayPriceEntity? in
+            guard !existingPriceDates.contains(calendar.startOfDay(for: price.date)) else {
+                return nil
             }
-            
-            assetEntity.priceHistory.append(contentsOf: entities)
+
+            let entity = AssetDayPriceEntity(date: price.date, price: price.price, asset: assetEntity)
+            dataBase.insert(entity: entity)
+            return entity
+        }
+        
+        assetEntity.priceHistory.append(contentsOf: entities)
+        if !entities.isEmpty {
             try dataBase.save()
-            
-            if let dayPrice = prices.first(where: { $0.date.isSameDay(with: date) }) {
-                return dayPrice.price
-            } else {
-                throw SnapshotDataManagerError.dataNotFound
-            }
+        }
+        
+        if let dayPrice = prices.first(where: { $0.date.isSameDay(with: date) }) {
+            return dayPrice.price
+        } else if let dayPrice = prices.filter({ $0.date <= date }).max(by: { $0.date < $1.date }) {
+            return dayPrice.price
+        } else {
+            throw SnapshotDataManagerError.dataNotFound
         }
     }
     
@@ -184,6 +211,14 @@ public final class SnapshotDataManager: ManagesSnapshotData {
         }
     }
 
+    private func isWithinHistoricalDataRange(_ date: Date) -> Bool {
+        calendar.startOfDay(for: date) >= calendar.startOfDay(for: oldestHistoricalDataDate())
+    }
+
+    private func oldestHistoricalDataDate() -> Date {
+        calendar.date(byAdding: .year, value: -1, to: .now) ?? .now
+    }
+
     private func realizedProfit(in portfolio: Portfolio, until date: Date) -> [Amount] {
         AmountCalculator.sum(
             of: portfolio.assetsTransactions
@@ -207,7 +242,7 @@ private struct SnapshotPosition {
     mutating func applyBuy(_ transaction: AssetTransaction) {
         quantity += transaction.quantity
         openAmount = Amount(
-            value: openAmount.value + transaction.amount.value + transaction.commision.value,
+            value: openAmount.value + transaction.amount.value,
             currency: asset.currency
         )
     }
@@ -230,7 +265,7 @@ private struct SnapshotPosition {
         }
 
         return Amount(
-            value: transaction.amount.value - transaction.commision.value - profit.value,
+            value: transaction.amount.value - profit.value,
             currency: transaction.amount.currency
         )
     }

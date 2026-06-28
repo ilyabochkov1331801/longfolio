@@ -25,6 +25,7 @@ final class PortfolioDetailsScreenViewModel {
     private let mode: PortfolioDetailsMode
     private var cancelBag: Set<AnyCancellable> = []
     private var sourcePortfolios: [Portfolio] = []
+    @ObservationIgnored private var isLoadingPortfolio = false
     
     var totalAmount: [Amount]?
     var profitAmount: [Amount]?
@@ -35,7 +36,6 @@ final class PortfolioDetailsScreenViewModel {
     var positionsAmount: [Asset: Amount] = [:]
     var positionsProfit: [Asset: Amount] = [:]
     var positionsDisplayData: [Asset: PositionDisplayData] = [:]
-    var canShowMorePositions = false
     var isReadOnly: Bool {
         mode == .allPortfolios
     }
@@ -68,8 +68,7 @@ final class PortfolioDetailsScreenViewModel {
         
         self.portfolio = portfolio
         self.sourcePortfolios = mode == .allPortfolios ? [] : [portfolio]
-        positionsForDisplaying = Array(portfolio.positions.prefix(5))
-        canShowMorePositions = portfolio.positions.count > 2
+        positionsForDisplaying = sortedPositions(portfolio.positions)
         setupBindings()
     }
 }
@@ -119,7 +118,7 @@ enum PortfolioDetailsResultPeriod: CaseIterable, Equatable, Hashable {
         case .month:
             "Month"
         case .year:
-            "Year"
+            "YTD"
         }
     }
 
@@ -130,7 +129,7 @@ enum PortfolioDetailsResultPeriod: CaseIterable, Equatable, Hashable {
         case .month:
             calendar.date(byAdding: .month, value: -1, to: date)
         case .year:
-            calendar.date(byAdding: .year, value: -1, to: date)
+            calendar.date(from: calendar.dateComponents([.year], from: date))
         }
     }
 }
@@ -146,6 +145,13 @@ extension PortfolioDetailsScreenViewModel {
     }
 
     func loadPortfolio() async {
+        guard !isLoadingPortfolio else {
+            return
+        }
+
+        isLoadingPortfolio = true
+        defer { isLoadingPortfolio = false }
+
         do {
             switch mode {
             case .single:
@@ -159,8 +165,7 @@ extension PortfolioDetailsScreenViewModel {
                 sourcePortfolios = portfolios
                 portfolio = Portfolio.combined(name: "All portfolios", portfolios: portfolios)
             }
-            positionsForDisplaying = Array(portfolio.positions.prefix(2))
-            canShowMorePositions = portfolio.positions.count > 2
+            positionsForDisplaying = sortedPositions(portfolio.positions)
             await loadAmounts()
         } catch {
             
@@ -196,6 +201,7 @@ extension PortfolioDetailsScreenViewModel {
                     defaultCurrency: defaultCurrency
                 )
             }
+            positionsForDisplaying = sortedPositions(portfolio.positions)
             await loadPeriodResults()
         } catch {
 
@@ -263,6 +269,16 @@ extension PortfolioDetailsScreenViewModel {
         return profit.value / abs(openAmount.value)
     }
 
+    private func sortedPositions(_ positions: [Position]) -> [Position] {
+        positions.sorted {
+            positionSortAmount($0) > positionSortAmount($1)
+        }
+    }
+
+    private func positionSortAmount(_ position: Position) -> Double {
+        positionsAmount[position.asset]?.value ?? position.openAmount.value
+    }
+
     func loadPeriodResults() async {
         guard let currentProfit = profitAmount else {
             periodResults = PortfolioDetailsResultPeriod.allCases.map {
@@ -307,12 +323,11 @@ extension PortfolioDetailsScreenViewModel {
                 amount: snapshotAmount(for: snapshot),
                 date: snapshot.date
             )
-            let snapshotInvestedAmount = snapshotAmount.value - snapshotProfit.value
-            guard snapshotInvestedAmount != 0 else {
+            guard snapshotAmount.value != 0 else {
                 return nil
             }
 
-            return (currentProfit.value - snapshotProfit.value) / abs(snapshotInvestedAmount)
+            return (currentProfit.value - snapshotProfit.value) / abs(snapshotAmount.value)
         } catch {
             return nil
         }

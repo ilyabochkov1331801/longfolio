@@ -119,12 +119,6 @@ struct PortfolioDetailsScreenView: View {
                         }
                     }
                 }
-                
-                if viewModel.canShowMorePositions {
-                    Button("All positions") {
-                        
-                    }
-                }
             }
 
             Section("Transactions") {

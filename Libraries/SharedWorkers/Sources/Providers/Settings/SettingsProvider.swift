@@ -32,11 +32,9 @@ public final class SettingsProvider: ObservableObject, ProvidesSettings {
     }
     
     private func setDefaultData() {
-        if let currency = try? getDefaultCurrency() {
-            return
+        if (try? getDefaultCurrency()) == nil {
+            try? setDefaultCurrency(currency: .eur)
         }
-        
-        try? setDefaultCurrency(currency: .eur)
     }
 
     public func setDefaultCurrency(currency: Currency) throws {
