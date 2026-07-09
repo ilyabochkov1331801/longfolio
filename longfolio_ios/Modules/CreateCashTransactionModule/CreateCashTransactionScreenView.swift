@@ -16,13 +16,7 @@ struct CreateCashTransactionScreenView: View {
         RootScreenView(router: router) {
             Form {
                 Section("Transaction") {
-                    Picker(
-                        "Currency",
-                        selection: $viewModel.selectedCurrency
-                    ) {
-                        Text("USD").tag(Currency.usd)
-                        Text("EUR").tag(Currency.eur)
-                    }
+                    CurrencySelector(selection: $viewModel.selectedCurrency)
 
                     TextInput(
                         output: $viewModel.amountValue,

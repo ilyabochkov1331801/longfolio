@@ -24,4 +24,9 @@ public struct PortfolioStatisticsDataManager {
         let positionsHolding = portfolio.positions.map(\.openAmount)
         return AmountCalculator.difference(of: positionsAmount, taken: positionsHolding)
     }
+
+    public func totalProfit(in portfolio: Portfolio) async throws -> [Amount] {
+        let openPositionsProfit = try await openPositionsProfit(in: portfolio)
+        return AmountCalculator.sum(of: openPositionsProfit + portfolio.realizedProfit)
+    }
 }

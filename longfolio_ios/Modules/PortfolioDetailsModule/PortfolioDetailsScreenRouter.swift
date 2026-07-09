@@ -12,6 +12,7 @@ enum PortfolioDetailsScreenRoute: Hashable, Identifiable {
     case transactions(Portfolio)
     case createCashTransaction(Portfolio)
     case createAssetTransaction(Portfolio)
+    case sellAssetTransaction(Portfolio, AssetLot)
     case createDividendTransaction(Portfolio)
     case openHistory(Portfolio)
 }

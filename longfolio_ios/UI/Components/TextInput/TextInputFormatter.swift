@@ -54,12 +54,20 @@ struct PlainTextInputFormatter: FormatsTextInput {
 
 struct AmountTextInputFormatter: FormatsTextInput {
     func format(raw: String) -> String {
-        let allowedCharacters = "0123456789,."
+        let allowedCharacters = "0123456789,.-"
         let filtered = raw.filter { allowedCharacters.contains($0) }
 
         var didUseDecimalSeparator = false
+        var didUseMinusSign = false
 
         return filtered.reduce(into: "") { partialResult, character in
+            if character == "-" {
+                guard partialResult.isEmpty && !didUseMinusSign else { return }
+                didUseMinusSign = true
+                partialResult.append(character)
+                return
+            }
+
             if character == "." || character == "," {
                 guard !didUseDecimalSeparator else { return }
                 didUseDecimalSeparator = true

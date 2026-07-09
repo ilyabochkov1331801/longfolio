@@ -30,7 +30,7 @@ struct TabBarScreenView: View {
                 }
                 .tag(Tab.assets)
             
-            Text("Settings")
+            SettingsScreenView(viewModel: .init(dependencyContainer: dependencyContainer))
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }

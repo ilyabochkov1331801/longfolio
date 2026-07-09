@@ -15,13 +15,13 @@ final class CreateDividendTransactionScreenViewModel {
 
     let portfolioName: String
     let positions: [Position]
-    var selectedTicker: AssetTicker?
+    var selectedAsset: Asset?
     var amountValue: Double = 0
     var date: Date = .now
     var error: String?
 
     var canSave: Bool {
-        selectedTicker != nil && amountValue > 0
+        selectedAsset != nil && amountValue > 0
     }
 
     init(dependencyContainer: DIContainer, portfolio: Portfolio) {
@@ -29,28 +29,26 @@ final class CreateDividendTransactionScreenViewModel {
         self.transactionsDataManager = TransactionsDataManager(dataBase: dataBase)
         self.portfolioName = portfolio.name
         self.positions = portfolio.positions
-        self.selectedTicker = portfolio.positions.first?.asset.ticker
+        self.selectedAsset = portfolio.positions.first?.asset
     }
 }
 
 @MainActor
 extension CreateDividendTransactionScreenViewModel {
     func createDividendTransaction() -> Bool {
-        guard
-            let selectedTicker,
-            let selectedPosition = positions.first(where: { $0.asset.ticker == selectedTicker })
-        else {
-            return false
-        }
+        guard let selectedAsset = selectedAsset else { return false }
 
         do {
             try transactionsDataManager.createDividendTransaction(
                 for: portfolioName,
-                asset: selectedPosition.asset,
-                quantity: selectedPosition.quantity,
+                asset: selectedAsset,
                 amount: Amount(
                     value: amountValue,
-                    currency: selectedTicker.exchange.currency
+                    currency: selectedAsset.currency
+                ),
+                paidTaxes: Amount( // TOOD: Добавить учет налога
+                    value: 0,
+                    currency: selectedAsset.currency
                 ),
                 date: date
             )

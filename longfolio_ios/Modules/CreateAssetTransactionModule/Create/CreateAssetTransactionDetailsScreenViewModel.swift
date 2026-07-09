@@ -18,11 +18,10 @@ final class CreateAssetTransactionDetailsScreenViewModel {
 
     let asset: Asset
     var currentPrice: Amount?
-    var type: AssetTransactionType = .buy
     var date: Date = .now
     var amount: Double = 0
+    var commission: Double = 0
     var quantity: Double = 0
-    var profite: Double = 0
     var error: String?
 
     var canSave: Bool {
@@ -57,15 +56,16 @@ extension CreateAssetTransactionDetailsScreenViewModel {
 
         do {
             let asset = try assetsDataManager.saveAsset(asset)
-            try transactionsDataManager.createAssetTransaction(
+            try transactionsDataManager.createBuyAssetTransaction(
                 for: portfolioName,
                 asset: asset,
-                type: type,
                 quantity: quantity,
                 amount: Amount(value: amount, currency: asset.currency),
+                commision: Amount(value: commission, currency: asset.currency),
                 date: date
             )
             return true
+            
         } catch {
             self.error = error.localizedDescription
             return false

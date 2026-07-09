@@ -24,6 +24,14 @@ final class PortfoliosScreenViewModel {
     var amounts: [String: [Amount]] = [:]
     var profits: [String: [Amount]] = [:]
     var totalAmount: [Amount]?
+    var totalProfit: [Amount]?
+    var allPortfolios: Portfolio? {
+        guard !portfolios.isEmpty else {
+            return nil
+        }
+
+        return Portfolio.combined(name: "All portfolios", portfolios: portfolios)
+    }
     
     init(dependencyContainer: DIContainer) {
         self.contextManager = dependencyContainer.contextManager
@@ -55,6 +63,10 @@ extension PortfoliosScreenViewModel {
     func loadPortfolios() {
         do {
             portfolios = try portfolioDataManager.fetchPortfolios()
+            amounts = [:]
+            profits = [:]
+            totalAmount = nil
+            totalProfit = nil
             loadAmounts()
         } catch {
             
@@ -74,9 +86,10 @@ extension PortfoliosScreenViewModel {
             do {
                 for portfolio in portfolios {
                     amounts[portfolio.name] = try await portfolioStatisticsManager.totalAmount(in: portfolio)
-                    profits[portfolio.name] = try await portfolioStatisticsManager.openPositionsProfit(in: portfolio)
+                    profits[portfolio.name] = try await portfolioStatisticsManager.totalProfit(in: portfolio)
                 }
                 totalAmount = AmountCalculator.sum(of: amounts.values.flatMap { $0 })
+                totalProfit = AmountCalculator.sum(of: profits.values.flatMap { $0 })
             } catch {
                 
             }

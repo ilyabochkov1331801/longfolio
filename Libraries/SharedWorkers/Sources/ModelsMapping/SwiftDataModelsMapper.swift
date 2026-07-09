@@ -10,10 +10,16 @@ import SharedModels
 
 final class SwiftDataModelsMapper {
     func makePortfolio(from entity: PortfolioEntity) -> Portfolio {
-        Portfolio(
+        let assetTransactions = (
+            entity.buyAssetsTransactions.map(makeBuyAssetTransaction) +
+            entity.sellAssetsTransactions.map(makeSellAssetTransaction)
+        ).sorted(by: { $0.date > $1.date })
+
+        return Portfolio(
             name: entity.name,
             cashAmount: entity.cashAmount,
-            assetsTransactions: entity.assetsTransactions.map(makeAssetTransaction),
+            realizedProfit: entity.realizedProfit,
+            assetsTransactions: assetTransactions,
             cashTransactions: entity.cashTransactions.map(makeCashTransaction),
             dividendsTransactions: entity.dividendTransactions.map(makeDividendTransaction),
             positions: entity.positions.map(makePosition),
@@ -29,13 +35,26 @@ final class SwiftDataModelsMapper {
         )
     }
 
-    func makeAssetTransaction(from entity: AssetTransactionEntity) -> AssetTransaction {
+    func makeBuyAssetTransaction(from entity: BuyAssetTransactionEntity) -> AssetTransaction {
         AssetTransaction(
             id: entity.id,
             date: entity.date,
-            type: entity.type,
+            type: .buy,
             quantity: entity.quantity,
             amount: entity.amount,
+            commision: entity.commision,
+            asset: makeAsset(from: entity.asset)
+        )
+    }
+    
+    func makeSellAssetTransaction(from entity: SellAssetTransactionEntity) -> AssetTransaction {
+        AssetTransaction(
+            id: entity.id,
+            date: entity.date,
+            type: .sell(profit: entity.profit, closedLots: entity.closedLots.map(makeAssetLot)),
+            quantity: entity.quantity,
+            amount: entity.amount,
+            commision: entity.commision,
             asset: makeAsset(from: entity.asset)
         )
     }
@@ -53,12 +72,22 @@ final class SwiftDataModelsMapper {
             id: entity.id,
             date: entity.date,
             asset: makeAsset(from: entity.asset),
-            amount: entity.amount
+            amount: entity.amount,
+            paidTaxes: entity.paidTaxes
         )
     }
 
     func makePosition(from entity: PositionEntity) -> Position {
         Position(
+            asset: makeAsset(from: entity.asset),
+            lots: entity.lots.map(makeAssetLot)
+        )
+    }
+    
+    func makeAssetLot(from entity: AssetLotEntity) -> AssetLot {
+        AssetLot(
+            id: entity.id,
+            date: entity.date,
             asset: makeAsset(from: entity.asset),
             quantity: entity.quantity,
             openAmount: entity.openAmount
@@ -70,7 +99,8 @@ final class SwiftDataModelsMapper {
             positions: entity.positions.map(makePositionSnapshot),
             date: entity.date,
             name: entity.name,
-            cache: entity.cache
+            cache: entity.cache,
+            realizedProfit: entity.realizedProfit
         )
     }
 

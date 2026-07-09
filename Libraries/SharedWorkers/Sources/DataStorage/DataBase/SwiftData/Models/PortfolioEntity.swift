@@ -15,9 +15,13 @@ final class PortfolioEntity {
     var name: String
 
     var cashAmount: [Amount]
+    var realizedProfit: [Amount]
     
-    @Relationship(deleteRule: .cascade, inverse: \AssetTransactionEntity.portfolio)
-    var assetsTransactions: [AssetTransactionEntity]
+    @Relationship(deleteRule: .cascade, inverse: \BuyAssetTransactionEntity.portfolio)
+    var buyAssetsTransactions: [BuyAssetTransactionEntity]
+    
+    @Relationship(deleteRule: .cascade, inverse: \SellAssetTransactionEntity.portfolio)
+    var sellAssetsTransactions: [SellAssetTransactionEntity]
     
     @Relationship(deleteRule: .cascade, inverse: \DividendTransactionEntity.portfolio)
     var dividendTransactions: [DividendTransactionEntity]
@@ -34,7 +38,9 @@ final class PortfolioEntity {
     init(
         name: String,
         cashAmount: [Amount],
-        assetsTransactions: [AssetTransactionEntity],
+        realizedProfit: [Amount],
+        buyAssetsTransactions: [BuyAssetTransactionEntity],
+        sellAssetsTransactions: [SellAssetTransactionEntity],
         dividendTransactions: [DividendTransactionEntity],
         cashTransactions: [CashTransactionEntity],
         positions: [PositionEntity],
@@ -42,7 +48,9 @@ final class PortfolioEntity {
     ) {
         self.name = name
         self.cashAmount = cashAmount
-        self.assetsTransactions = assetsTransactions
+        self.realizedProfit = realizedProfit
+        self.buyAssetsTransactions = buyAssetsTransactions
+        self.sellAssetsTransactions = sellAssetsTransactions
         self.dividendTransactions = dividendTransactions
         self.cashTransactions = cashTransactions
         self.positions = positions

@@ -10,7 +10,7 @@ import SwiftUI
 
 enum PortfoliosScreenRoute: Hashable, Identifiable {
     case createNewPortfolio
-    case portfolioDetails(Portfolio)
+    case portfolioDetails(Portfolio, PortfolioDetailsMode)
 }
 
 final class PortfoliosScreenRouter: DefaultRootRouter<PortfoliosScreenRoute> { }

@@ -37,18 +37,6 @@ struct CreateAssetTransactionDetailsScreenView: View {
                 }
 
                 Section("Transaction") {
-                    Picker(
-                        "Type",
-                        selection: $viewModel.type
-                    ) {
-                        Text("Buy").tag(AssetTransactionType.buy)
-                        Text("Sell").tag(
-                            AssetTransactionType.sell(
-                                profit: Amount(value: viewModel.profite, currency: viewModel.asset.currency)
-                            )
-                        )
-                    }
-
                     DatePicker(
                         "Date",
                         selection: $viewModel.date,
@@ -76,22 +64,20 @@ struct CreateAssetTransactionDetailsScreenView: View {
                             formatter: AmountTextInputFormatter()
                         )
                     )
-                    
-                    if viewModel.type != .buy {
-                        TextInput(
-                            output: $viewModel.profite,
-                            configuration: .init(
-                                title: "Profite",
-                                placeholder: "Enter amount",
-                                hint: "Diff beetwen buy and cell",
-                                keyboardType: .decimalPad,
-                                formatter: AmountTextInputFormatter()
-                            )
+
+                    TextInput(
+                        output: $viewModel.commission,
+                        configuration: .init(
+                            title: "Commission",
+                            placeholder: "Enter commission",
+                            hint: "Broker fee in asset currency",
+                            keyboardType: .decimalPad,
+                            formatter: AmountTextInputFormatter()
                         )
-                    }
+                    )
                 }
             }
-            .navigationTitle("New Asset Transaction")
+            .navigationTitle("New Buy")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {

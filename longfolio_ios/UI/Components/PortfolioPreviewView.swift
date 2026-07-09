@@ -9,6 +9,8 @@ import SwiftUI
 import SharedModels
 
 struct PortfolioPreviewView: View {
+    @EnvironmentObject private var dependencyContainer: DIContainer
+    
     let portfolio: Portfolio
     let portfolioAmount: [Amount]?
     let profitAmount: [Amount]?
@@ -22,17 +24,12 @@ struct PortfolioPreviewView: View {
             Spacer()
             
             if let portfolioAmount, let profitAmount {
-                VStack(alignment: .trailing) {
-                    ForEach(portfolioAmount.sorted(), id: \.currency) { amount in
-                        AmountView(amount: amount)
-                    }
-                }
-                
-                VStack(alignment: .trailing) {
-                    ForEach(profitAmount.sorted(), id: \.currency) { amount in
-                        ProfitAmountView(profit: amount)
-                    }
-                }
+                ConvertedAmountView(viewModel: .init(
+                    diContatiner: dependencyContainer,
+                    amount: portfolioAmount,
+                    profitAmount: profitAmount,
+                    convertedDate: Date()
+                ))
             } else {
                 ProgressView()
                     .padding()

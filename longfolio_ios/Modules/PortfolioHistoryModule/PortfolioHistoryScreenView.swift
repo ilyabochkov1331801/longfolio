@@ -15,54 +15,72 @@ struct PortfolioHistoryScreenView: View {
     @StateObject var router: PortfolioHistoryScreenRouter
     
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 16) {
-                Spacer()
-                
-                HStack(spacing: 12) {
-                    Button {
-                        viewModel.selectPreviousDay()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
-                    .buttonStyle(.bordered)
-                    
-                    DatePicker(
-                        "",
-                        selection: $viewModel.selectedDate,
-                        in: ...viewModel.maximumSelectableDate,
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    
-                    Button {
-                        viewModel.selectNextDay()
-                    } label: {
-                        Image(systemName: "chevron.right")
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(!viewModel.canSelectNextDay)
-                }
-                
-                Spacer()
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-            
+        RootScreenView(router: router) {
             snapshotContent
+                .background(Color(.systemGroupedBackground))
+                .navigationTitle("History")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        datePickerToolbar
+                    }
+                }
+                .task {
+                    await viewModel.loadData()
+                }
         }
-        .background(Color(.systemGroupedBackground))
-        .task {
-            await viewModel.loadData()
+    }
+
+    private var datePickerToolbar: some View {
+        HStack(spacing: 4) {
+            Button {
+                viewModel.selectPreviousDay()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 34, height: 34)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.glass)
+
+            datePickerButton
+
+            Button {
+                viewModel.selectNextDay()
+            } label: {
+                Image(systemName: "chevron.right")
+                    .font(.body.weight(.semibold))
+                    .frame(width: 34, height: 34)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.glass)
+            .disabled(!viewModel.canSelectNextDay)
+            .opacity(viewModel.canSelectNextDay ? 1 : 0.35)
         }
+    }
+
+    private var datePickerButton: some View {
+        DatePicker(
+            "",
+            selection: $viewModel.selectedDate,
+            in: ...viewModel.maximumSelectableDate,
+            displayedComponents: .date
+        )
+        .datePickerStyle(.compact)
+        .labelsHidden()
+        .frame(minWidth: 150, minHeight: 34)
+        .padding(.horizontal, 10)
     }
     
     @ViewBuilder
     private var snapshotContent: some View {
         List {
             Section {
-                if let errorMessage = viewModel.errorMessage {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 24)
+                } else if let errorMessage = viewModel.errorMessage {
                     ContentUnavailableView(
                         "Something went wrong",
                         systemImage: "briefcase",
